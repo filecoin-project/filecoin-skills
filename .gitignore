@@ -1,0 +1,6 @@
+*.env
+.filecoin-shares/
+.DS_Store
+node_modules/
+docs/
+.lavish/
