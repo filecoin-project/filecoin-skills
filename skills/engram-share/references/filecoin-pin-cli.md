@@ -51,7 +51,7 @@ export SESSION_KEY=0x...       # the session key PRIVATE key, not the session ad
 filecoin-pin add ./file.html --credentials-file ~/.filecoin-pin.env
 ```
 
-`--credentials-file <path>` loads a dotenv-style file (e.g. `SESSION_KEY`, `WALLET_ADDRESS`, `PRIVATE_KEY`) before other options are resolved, and does **not** override variables already set in the environment. It is available on every command, including as a global flag. The CLI does not read any dotfile implicitly — either export the variables or pass `--credentials-file`.
+`--credentials-file <path>` loads a dotenv-style file (e.g. `SESSION_KEY`, `WALLET_ADDRESS`, `PRIVATE_KEY`) before other options are resolved, and does **not** override variables already set in the environment. It is available on every command, including as a global flag. Do not rely on the CLI finding a dotfile on its own: v2.0.1 gave no sign of doing so (a command with no auth flag and no auth env var fails outright with `No authentication provided`), and implicit loading of a saved session file is only now being added (filecoin-pin#701, draft). Either export the variables or pass `--credentials-file`.
 
 **View-only:** `--view-address <address>` (env `VIEW_ADDRESS`) inspects an account without signing.
 
@@ -146,7 +146,7 @@ Key options:
 - `--skip-ipni-verification` do not wait for IPNI advertisement (automatic on devnet)
 - `--egress-provider beam|none` CDN egress for piece retrieval. **Default is `none` as of v2.0.0.** `beam` (FilBeam CDN) draws egress from the owner lockup and locks an extra 1 USDFC per new data set, so pass it only when the user explicitly asks for CDN egress.
 - `--metadata key=value` / `--data-set-metadata key=value` attach metadata (repeatable, value may be empty). `--data-set-metadata` also selects data sets: existing data sets whose metadata matches are reused (`Matched existing data sets <ids> via metadata filter`), otherwise new ones are created with that metadata. The default data-set `source` key ("filecoin-pin") can be overridden this way, e.g. `--data-set-metadata source=my-app`. As of v2.0.0 the CLI reuses existing matching data sets by default.
-- `--erc8004-type <registration|validationrequest|validationresponse|feedback>` and `--erc8004-agent <id>` (DID, address, …) tag the piece as an ERC-8004 agent artifact. New in v2.0.0.
+- `--erc8004-type <registration|validationrequest|validationresponse|feedback>` and `--erc8004-agent <id>` (DID, address, …) tag the piece as an ERC-8004 agent artifact (present since at least v1.3.1; simply undocumented here before).
 
 Progress lines are printed as steps complete, then a final summary. `File packed with root CID: ...` appears within seconds of starting, before any upload; `[Primary] Stored on provider N`, IPNI confirmation, and on-chain confirmation follow over the next minutes:
 
