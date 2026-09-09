@@ -18,8 +18,8 @@ An engram is the physical trace a memory leaves in a brain. This suite is that, 
 ## Install
 
 ```bash
-npx skills add jennijuju/engram --skill engram-share
-npx skills add jennijuju/engram --skill engram-library
+npx skills add filecoin-project/engram --skill engram-share
+npx skills add filecoin-project/engram --skill engram-library
 ```
 
 Each skill's own README covers its prerequisites and first-time setup.
