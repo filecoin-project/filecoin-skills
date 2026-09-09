@@ -58,7 +58,7 @@ Secrets files (`~/.engram.env`, `~/.filecoin-pin.env`, `~/.filecoin.env`, any us
 
 ### 2. Authenticate
 
-Two credential modes: **owner** (a wallet private key — full access, including payments) and **session** (a scoped key authorized on-chain by an owner — data operations only). Resolve the first source that exists; session credentials win over an owner key when both are present, matching the CLI's own precedence and preferring the narrower key:
+Two credential modes: **owner** (a wallet private key — full access, including payments) and **session** (a scoped key authorized on-chain by an owner — data operations only). Resolve the first source that exists. When BOTH a session key and an owner key are present in the environment, prefer the session key — the narrower credential — but say so, and do not assume the CLI resolves it the same way: v2.0.1 documents both under one env-var tier without stating a winner, so pass the choice explicitly with `--session-key`/`--wallet-address` rather than relying on implicit precedence:
 
 1. `SESSION_KEY` + `WALLET_ADDRESS` in the environment — session mode;
 2. `PRIVATE_KEY` in the environment — owner mode;
