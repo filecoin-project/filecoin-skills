@@ -35,7 +35,7 @@ If the phrasing is ambiguous, default to Show — it costs nothing to run and th
 
 ## 1. Preflight (verify/discover only)
 
-Show needs none of this. `command -v filecoin-pin`; missing → `npm install -g filecoin-pin` (Node 24+). `../engram-share/references/filecoin-pin-cli.md` is the CLI reference this skill also reads; if `filecoin-pin --version` doesn't match its "verified against" line, that's `engram-share`'s file to regenerate (its step 1), not this skill's — flag it and continue, the flags this skill needs (`data-set ls`, `data-set show`, `data-set piece-status`) are stable across recent versions.
+Show needs none of this. `command -v filecoin-pin`; missing → `npm install -g filecoin-pin` (Node 24+). `../engram-share/references/filecoin-pin-cli.md` is the CLI reference this skill also reads; if `filecoin-pin --version` doesn't match its "verified against" line, that's `engram-share`'s file to regenerate (its step 1), not this skill's — flag it and continue. Do NOT assume these flags are stable across versions: CLI v2.0.0 changed `data-set piece-status` in a way that breaks the checks below — see the v2 note under "Verify catalog / Discover wallet".
 
 **Auth, read-only and transparent:** this skill only ever calls inspection subcommands, so prefer `--view-address <address>` — it inspects an account without touching key material at all, and it's the only auth mode this skill should ever need. Resolve it in this order, and always tell the user which address is in play before running a check — never resolve and proceed silently:
 
@@ -57,6 +57,8 @@ Report the path (open it in a browser tab if the harness has one) and render.py'
 The library itself is interactive without needing another agent turn: each section has a search box, a sortable Date (or Delete date) column, and pagination once it has more than 8 rows — all client-side, no server. A "Check against Filecoin" button sits next to the check-line; the page can't reach an agent on its own, so clicking it only copies the trigger phrase to the clipboard for the user to paste — mention this once so a user who opens the file directly (not through an agent) knows the live check exists and how to reach it.
 
 ## 3. Verify catalog / Discover wallet
+
+> **⚠ Known breakage on filecoin-pin v2 — resolution pending.** CLI v2.0.0 (filecoin-pin#683) removed `PieceInfo.metadata` and `PieceInfo.rootIpfsCid`, so `data-set piece-status` no longer returns a piece's `name` or `ipfsRootCID`. Both checks below are written against those fields. **Verify catalog** can be re-keyed to `pieceCid`, which the ledger already stores and `piece-status` still returns. **Discover wallet** has no remaining data source: without `ipfsRootCID` an unknown piece cannot be mapped to a Root CID (the two are not derivable from each other) and has no name to recover. Upstream considers dropping piece-metadata-dependent features acceptable (filecoin-pin#668). Until this is decided, treat the steps below as accurate for v1.x only, and say so rather than reporting an empty or partial check as a clean result.
 
 Both checks build the same kind of observed-pieces list and end at the same preview (step 4). They differ only in scope, and both start by fixing the exact set of data-set IDs this check covers — before any piece-status call runs, not inferred afterward from whatever turns up:
 
