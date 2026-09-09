@@ -55,7 +55,14 @@ filecoin-pin add ./file.html --credentials-file ~/.filecoin-pin.env
 
 **View-only:** `--view-address <address>` (env `VIEW_ADDRESS`) inspects an account without signing.
 
-> **No browser pairing in the released CLI.** There is no `session create --console` and no `session import` subcommand in v2.0.1 — `session` is exactly `create`, `authorize`, `revoke`, `generate`. Session keys are authorized with an owner key (single-party `create`) or via the two-party `generate` + `authorize` flow below. If the Filecoin Pay console gains a session-keys page that issues keys, save its credentials file and point `--credentials-file` at it.
+>  **No browser pairing in the released CLI — and when it arrives it is `login`, not `--console`.** In v2.0.1 `session` is exactly `create`, `authorize`, `revoke`, `generate`: there is no `session create --console` and no `session import`. Session keys are authorized with an owner key (single-party `create`) or the two-party `generate` + `authorize` flow below.
+>
+> Two pieces are in flight. Neither is released, so neither may be documented as available — but do not re-add `--console` either, because that is not the shape it is taking:
+>
+> 1. **Console session-keys page** (FilOzone/filecoin-pay-explorer #346→#380, open): generates the key in the browser, authorizes it on chain, and offers a `.env` download containing `SESSION_KEY` and `WALLET_ADDRESS` whose own header says to use it with `filecoin-pin --credentials-file <file>`. That format is already consumable today — no CLI change needed.
+> 2. **`filecoin-pin login` / `logout`** (filecoin-project/filecoin-pin #699→#703, draft): generates or resumes a session key, prints and opens the console authorize link, waits for the grant, and writes a 0600 session file the CLI then auto-loads. Default scopes are `createDataSet,addPieces`.
+>
+> When `login` ships, it becomes the recommended first-run path and `session` becomes the owner-signed advanced path. Until it exists in the installed version, do not reference it in user instructions.
 
 ### session subcommands
 
