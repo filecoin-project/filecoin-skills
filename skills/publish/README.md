@@ -15,7 +15,7 @@ Say "publish this", "share this file", or "pin this" and the agent hands back a 
 
 ## Install
 
-Requires Node 24+ and a wallet holding USDFC. You need a little FIL too, but not for publishing — the storage provider submits those transactions for you. FIL covers the console transaction that deposits your USDFC into Filecoin Pay.
+Requires Node 24+ and a funded wallet (FIL for gas, USDFC for storage).
 
 ```bash
 npx skills add filecoin-project/filecoin-skills --skill publish
