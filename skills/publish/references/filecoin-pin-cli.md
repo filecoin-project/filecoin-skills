@@ -152,7 +152,20 @@ filecoin-pin rm --data-set-id <id> --all [--force]               # remove all pi
 - **Cross-owner boundary is enforced**: `rm`/`terminate` against a data set owned by another wallet is rejected (`Data set N is not owned by X (owned by Y)`).
 - **`data-set terminate` is owner-`PRIVATE_KEY`-only in this build.** Under session auth it accepts the credentials, passes the on-chain `terminateService` scope check, then builds the transaction `from: owner` with no local signer and dies with a raw `eth_sendTransaction not found` error on any public RPC. It never succeeds under a session key — do not grant `terminateService` for it; route terminate to an owner-key environment or refuse with "terminate needs the owner wallet on this build".
 
-Every piece stored through `add` automatically carries per-piece metadata `name` (the file's base name — public, on-chain) and `ipfsRootCID` (the share-link CID); `piece-status` prints both for each active piece, which is enough to rebuild a share listing from chain state alone.
+Every piece stored through `add` and `import` still carries per-piece metadata `name` (the file's base name) and `ipfsRootCID` (the share-link CID), written on-chain — so a published filename stays public even though nothing surfaces it any more. Those writes are all that is left of piece metadata: v2.0.0 removed `PieceInfo.metadata`, `PieceInfo.rootIpfsCid`, and Root-CID filtering on `piece-status`, so the CLI no longer reads any of it back. `piece-status` returns each active piece's index, status, Piece CID and size, and nothing else. A Root CID therefore cannot be recovered from chain state and a share listing cannot be rebuilt from it — the local ledger is the only record of what was published.
+
+## provider — list and inspect providers
+
+```bash
+filecoin-pin provider ls                  # approved providers; --all ignores approval status,
+                                          # --endorsed lists only endorsed ones
+filecoin-pin provider show <provider>     # details for one provider
+filecoin-pin provider ping [provider]     # ping a provider's PDP service; pings all approved
+                                          # providers when the argument is omitted, --all ignores
+                                          # approval status
+```
+
+All three are read-only and need no credentials — they work without a login or a key. `provider ping` is the supported liveness check: it queries the provider's PDP service directly, so prefer it over probing a gateway by hand.
 
 ## No JSON output
 
