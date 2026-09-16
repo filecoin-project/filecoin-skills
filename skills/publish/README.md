@@ -15,7 +15,7 @@ Say "publish this", "share this file", or "pin this" and the agent hands back a 
 
 ## Install
 
-Requires Node 24+ and a funded wallet (FIL for gas, USDFC for storage).
+Requires Node 24+ and a wallet holding USDFC. You need a little FIL too, but not for publishing — the storage provider submits those transactions for you. FIL covers the console transaction that deposits your USDFC into Filecoin Pay.
 
 ```bash
 npx skills add filecoin-project/filecoin-skills --skill publish
@@ -24,7 +24,18 @@ npm install -g filecoin-pin
 
 Then authenticate once: run `filecoin-pin login` and approve the session key in the Filecoin Cloud console with your wallet. That's the only default path — the agent will use a wallet private key (`~/.filecoin-pin.env` with `PRIVATE_KEY=0x...`, `chmod 600`, self-funding shares) only if you explicitly ask it to. It will not write key files for you and will never ask you to paste a key into a conversation.
 
-That's it — nothing else to set up by hand.
+That's the whole setup on this machine. The one remaining thing is funding.
+
+## Set up payments
+
+Filecoin Pin uses Filecoin Pay to manage storage payments. Before you can publish anything, you need to:
+
+- **Authorise the Warm Storage Service** contract to spend USDFC on your behalf.
+- **Deposit USDFC into Filecoin Pay**, so storage providers can be paid.
+
+Both happen in the console, and they are a single wallet transaction. The agent cannot do either for you — a session key can't move money — so when funds are short it stops and hands you a pre-filled console link to approve.
+
+**How much to start with:** a couple of USDFC is plenty for a long while. Most of it is never spent. Your first publish creates the pair of data sets this skill reuses, and that pair locks a refundable reserve — a 30-day hold plus a security deposit — which is released if the data sets are ever terminated. The actual storage charge is a fraction of a USDFC per month, and later publishes reuse the same pair, so they add nothing new to the lockup.
 
 ## Layout
 
