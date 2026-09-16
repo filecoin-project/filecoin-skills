@@ -1,6 +1,6 @@
 # filecoin-pin CLI reference
 
-Condensed reference for filecoin-pin (verified against v2.0.1). The CLI uploads IPFS content to Filecoin storage providers with on-chain payment and daily cryptographic possession proofs. Full docs: https://docs.filecoin.cloud/getting-started/filecoin-pin/
+Condensed reference for filecoin-pin (verified against v2.1.0). The CLI uploads IPFS content to Filecoin storage providers with on-chain payment and daily cryptographic possession proofs. Full docs: https://docs.filecoin.cloud/getting-started/filecoin-pin/
 
 ## Install
 
@@ -49,13 +49,9 @@ What happens, in order:
 2. Opens (or with `--no-browser` prints) a console authorize link: `<console>/console/session-keys?authorize=<session-address>&scopes=<ids>&network=<slug>`. The human connects the OWNER wallet in the console and signs the grant. This is the only human step. The link carries no owner identity — the grant lands under whichever wallet the console is connected as.
 3. Waits for the on-chain grant (default `--timeout 300` seconds), then writes the owner's `WALLET_ADDRESS` into `session.env` and prints `✓ Authorized! Granted: <scopes>` (a partial grant lists per-scope ✓/✗ with "(owner declined)"). Exit `0` = every requested scope granted; exit `2` = no grant seen in time, `--no-wait`, or fewer scopes than requested (re-run login to resume); exit `1` = error, including a network the console has no pairing page for.
 
-`logout` deletes `session.env` locally only (`Logged out: removed <addr> from <path>` / `Not logged in: no session file at <path>`). The on-chain grant stays until it expires or is revoked on the console's session-keys page.
+`logout` deletes `session.env` locally only (`Logged out: removed <addr> from <path>` / `Not logged in: no session file at <path>`). The on-chain grant stays until it expires or is revoked. As of v2.1.0 logout prints a deep link that opens the console's revoke dialog on that specific key (`<console>/console/session-keys?revoke=<session-address>&network=<slug>`); it falls back to the plain session-keys page when the session file recorded no network, or the network has no console page.
 
-**Known grant-wait blockers in v2.0.1, and the reliable pattern:** the wait polls `eth_getLogs` against a public RPC whose latency trips the client's 10s timeout; after 3 consecutive failures the CLI aborts with exit 1 (`✗ Could not watch for the authorization. Your key is saved; rerun filecoin-pin login to resume.`). A re-run re-anchors the watch at the current chain head, so a grant that already landed is permanently behind the window — the wait may never confirm a login that actually succeeded, leaving `session.env` without `WALLET_ADDRESS` and every command failing with `No credentials found.` The pattern that always works:
-
-1. `filecoin-pin login --no-browser --no-wait` and hand the printed link to the human (before signing, they must confirm the console is connected as the intended owner wallet).
-2. If the wait never confirmed after they signed, append the owner address by hand: `printf 'WALLET_ADDRESS=<owner-address>\n' >> "<session.env path>"` — append-only; never read the file, it holds the session private key.
-3. Verify with `filecoin-pin balance --no-update-check` — the per-command scope gating does a direct on-chain read in about a second and reports grant status precisely.
+**Grant-wait reliability.** Through v2.0.1 the wait asked the owner scan for `toBlock: 'latest'`, which the public RPC answers in 23-35s — past viem's 10s request timeout — so three consecutive failures ended the wait with `✗ Could not watch for the authorization.` Worse, a re-run re-anchored the watch at the current chain head, so a grant that had already landed stayed permanently outside the window and `session.env` never received `WALLET_ADDRESS`. v2.1.0 scans to a named head instead and the wait completes normally. On v2.0.1 or older the recovery is to append the owner address by hand — `printf 'WALLET_ADDRESS=<owner-address>\n' >> "<session.env path>"`, append-only, never read the file — then verify with `filecoin-pin balance`.
 
 ## balance — the account report
 
@@ -150,7 +146,7 @@ filecoin-pin rm --data-set-id <id> --all [--force]               # remove all pi
 - `rm` works fully under session auth (scope `schedulePieceRemovals`): the removal goes as an EIP-712 message to the storage provider, who submits the transaction — no owner signer needed. `--wait` blocks until the removal transaction confirms; without it the command returns after scheduling. To report "deleted", use `--wait` then reconcile with `data-set piece-status <id>`.
 - **Missing scope** is refused in about a second with the session key named, per-scope detail (`expired at <ISO date>` vs `never granted`), a console remediation link requesting only the missing scopes, `session authorize`/`session create` hints, and exit 1. Safe to surface verbatim to a user. A fully lapsed key gets `Session expired (key <addr>, grants lapsed <date>)` with `Renew it:  filecoin-pin login`.
 - **Cross-owner boundary is enforced**: `rm`/`terminate` against a data set owned by another wallet is rejected (`Data set N is not owned by X (owned by Y)`).
-- **`data-set terminate` is owner-`PRIVATE_KEY`-only in this build.** Under session auth it accepts the credentials, passes the on-chain `terminateService` scope check, then builds the transaction `from: owner` with no local signer and dies with a raw `eth_sendTransaction not found` error on any public RPC. It never succeeds under a session key — do not grant `terminateService` for it; route terminate to an owner-key environment or refuse with "terminate needs the owner wallet on this build".
+- **`data-set terminate` under session auth was fixed in v2.1.0.** Through v2.0.1 it accepted session credentials, passed the `terminateService` scope check, then built the transaction `from: owner` with no local signer and died with a raw `eth_sendTransaction not found` on any public RPC. v2.1.0 routes it through the provider-signed path instead, so a session key with `terminateService` can terminate. Not exercised here — terminating a data set is destructive — so treat it as released-but-unverified and check before relying on it.
 
 Every piece stored through `add` and `import` still carries per-piece metadata `name` (the file's base name) and `ipfsRootCID` (the share-link CID), written on-chain — so a published filename stays public even though nothing surfaces it any more. Those writes are all that is left of piece metadata: v2.0.0 removed `PieceInfo.metadata`, `PieceInfo.rootIpfsCid`, and Root-CID filtering on `piece-status`, so the CLI no longer reads any of it back. `piece-status` returns each active piece's index, status, Piece CID and size, and nothing else. A Root CID therefore cannot be recovered from chain state and a share listing cannot be rebuilt from it — the local ledger is the only record of what was published.
 
@@ -201,7 +197,7 @@ Notes:
 
 ## Troubleshooting
 
-**`No credentials found.`** No flag, env var, credentials file, or usable saved login. Either run `filecoin-pin login`, or — if the user already approved a login whose grant-wait never confirmed — apply the login workaround above (append `WALLET_ADDRESS`, then verify with `balance`).
+**`No credentials found.`** No flag, env var, credentials file, or usable saved login. Run `filecoin-pin login`. If the user already approved a login whose grant-wait never confirmed (v2.0.1 and older — see the login section), append `WALLET_ADDRESS` by hand and verify with `balance`.
 
 **`Session expired (key …)` / scope refusals.** The grant lapsed or was revoked in the console, or the key never had the needed scope. An expired or revoked session means the key is spent — despite the CLI's `Renew it` hint, nothing gets extended: rotate with `filecoin-pin logout` then `filecoin-pin login` (a brand-new key, approved fresh in the console). A missing scope's refusal message carries a console link requesting exactly the missing scopes — surface it verbatim.
 
@@ -215,4 +211,4 @@ Notes:
 
 **Secondary copy failure** (`Got 1/2 copies`). Content is stored on the primary and retrievable; this is degraded redundancy, not data loss. Repair by targeting an existing healthy data set directly: `add <path> --copies 1 --data-set-id <id>` (plus the usual metadata flag, and `--auto-fund` in owner mode), choosing a set on a provider distinct from the one holding copy 1. Avoid `--provider-id` for repairs: it creates a brand-new data set even when the provider already holds matching data sets, stacking billing floors. Re-running the same add with only the metadata filter re-targets the same provider pair — if the failed provider's commit path is broken (repeated `Commit failed`), the re-run fails identically.
 
-**Command exits 2.** A confirmation was declined or a wait timed out after submission (for `login`: the grant was not yet confirmed — re-run to resume, or apply the login workaround). For storage commands, check state with `data-set piece-status` before retrying.
+**Command exits 2.** A confirmation was declined or a wait timed out after submission (for `login`: the grant was not yet confirmed — re-run to resume; on v2.0.1 and older see the login section). For storage commands, check state with `data-set piece-status` before retrying.
