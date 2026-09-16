@@ -33,9 +33,10 @@ Filecoin Pin uses Filecoin Pay to manage storage payments. Before you can publis
 - **Authorise the Warm Storage Service** contract to spend USDFC on your behalf.
 - **Deposit USDFC into Filecoin Pay**, so storage providers can be paid.
 
-Both happen in the console, and they are a single wallet transaction. The agent cannot do either for you — a session key can't move money — so when funds are short it stops and hands you a pre-filled console link to approve.
+Both happen in the console, to **Add Service** flow for Warm Storage,  and they are a single wallet transaction. Later top-ups are just a deposit on the same page. The agent cannot do either for you.  A session
+key can't move money,  so when funds are short it stops and hands you a pre-filled console link to approve from the wallet.
 
-**How much to start with:** a couple of USDFC is plenty for a long while. Most of it is never spent. Your first publish creates the pair of data sets this skill reuses, and that pair locks a refundable reserve — a 30-day hold plus a security deposit — which is released if the data sets are ever terminated. The actual storage charge is a fraction of a USDFC per month, and later publishes reuse the same pair, so they add nothing new to the lockup.
+**How much to start with:**  About 1 USDFC is locked as a refundable security deposit when your first publish creates the pair of datasets this skill reuses; the rest keeps up to ~25 GiB of artifacts stored (as two copies) for roughly 10 months. Later publishes reuse the same pair and add nothing new to the lockup.
 
 ## Layout
 
