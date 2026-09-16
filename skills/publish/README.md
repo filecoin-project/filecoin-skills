@@ -22,9 +22,9 @@ npx skills add filecoin-project/filecoin-skills --skill publish
 npm install -g filecoin-pin
 ```
 
-Then authenticate once: run `filecoin-pin login` and approve the session key in the Filecoin Cloud console with your wallet. That's the only default path — the agent will use a wallet private key (`~/.filecoin-pin.env` with `PRIVATE_KEY=0x...`, `chmod 600`, self-funding shares) only if you explicitly ask it to. It will not write key files for you and will never ask you to paste a key into a conversation.
+Then authenticate once: run `filecoin-pin login` and approve the session key in the Filecoin Cloud console with your wallet. 
+That's the only default path — the agent will use a wallet private key (`~/.filecoin-pin.env` with `PRIVATE_KEY=0x...`, `chmod 600`, self-funding shares) only if you explicitly ask it to. It will not write key files for you and will never ask you to paste a key into a conversation.
 
-That's the whole setup on this machine. The one remaining thing is funding.
 
 ## Set up payments
 
@@ -33,8 +33,7 @@ Filecoin Pin uses Filecoin Pay to manage storage payments. Before you can publis
 - **Authorise the Warm Storage Service** contract to spend USDFC on your behalf.
 - **Deposit USDFC into Filecoin Pay**, so storage providers can be paid.
 
-Both happen in the console, to **Add Service** flow for Warm Storage,  and they are a single wallet transaction. Later top-ups are just a deposit on the same page. The agent cannot do either for you.  A session
-key can't move money,  so when funds are short it stops and hands you a pre-filled console link to approve from the wallet.
+Both happen in the console, to **Add Service** flow for Warm Storage,  and they are a single wallet transaction. Later top-ups are just a deposit on the same page. The agent cannot do either for you.  A session key can't move money,  so when funds are short it stops and hands you a pre-filled console link to approve from the wallet.
 
 
 **How much to start with:**  5 USDFC. About 1 USDFC is locked as a refundable security deposit when your first publish creates the pair of datasets this skill reuses; the rest keeps up to ~25 GiB of artifacts stored (as two copies) for roughly 10 months. Later publishes reuse the same pair and add nothing new to the lockup.
@@ -47,9 +46,6 @@ key can't move money,  so when funds are short it stops and hands you a pre-fill
 | `CONTEXT.md` | Glossary of this skill's workflow language (share, copy, degraded share, share ledger...). Suite-shared terms (Pin, Root CID, Piece CID, inbrowser.link) live in `../CONTEXT.md`. |
 | `references/filecoin-pin-cli.md` | Tracked in git, so it's visible and reviewable on install. Can still drift from whatever CLI version you have installed: the skill checks the "verified against vX.Y.Z" line at the top against `filecoin-pin --version` every run (step 1 of SKILL.md) and regenerates the file itself if they differ. |
 
-## Iterating
-
-Every change follows the same loop the skill was built with: implement, have an independent agent cold-run the updated SKILL.md and try to break it, fix findings, then commit. The skill stays mainnet-only: the only mentions of calibration/testnet allowed in SKILL.md are inside the ban that forbids them.
 
 ## License
 
