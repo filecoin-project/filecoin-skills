@@ -193,7 +193,7 @@ Notes:
 - `curl -sI https://dweb.link/ipfs/<cid>` returns `301` to `https://<cid>.ipfs.dweb.link/`; use `curl -sIL` and check the final status is `200`.
 - On dweb.link, `?format=car` (or `Accept: application/vnd.ipld.car`) returns the whole DAG as a CAR; `Accept: application/vnd.ipld.raw` returns a single block.
 - Public gateways are rate-limited and best-effort; production retrieval should use verified-fetch, Helia, Kubo, or your own gateway.
-- The add summary's `Explorer:` line prints `https://pdp.vxb.ai/<network>/piece/<piece-cid>`, which currently redirects to `https://pdp.filecoin.cloud/...` — both hosts resolve the same PDP Explorer piece page.
+- The add summary's `Explorer:` line prints `https://pdp.vxb.ai/<network>/piece/<piece-cid>` — a dead link: that host now 301s every path to the bare explorer home (`https://pdp.filecoin.cloud/<network>`), dropping the piece. Never relay it; construct the piece page yourself as `https://pdp.filecoin.cloud/<network>/piece/<piece-cid>`.
 
 ## Troubleshooting
 

@@ -29,7 +29,7 @@ A point-in-time check of whether a storage provider's own retrieval endpoint is 
 _Avoid_: Provider health, uptime check, provider status
 
 **Trace**:
-A share's path back to its physical whereabouts on Filecoin: the PDP Explorer piece page (`pdp.filecoin.cloud/mainnet/piece/<pieceCid>` — the CLI's own `Explorer:` output prints the `pdp.vxb.ai` host, which redirects there) listing every data set and provider holding the piece and its live proving status. "Trace this share" is the user-facing link to it.
+A share's path back to its physical whereabouts on Filecoin: the PDP Explorer piece page (`pdp.filecoin.cloud/<network>/piece/<pieceCid>`, built from the Piece CID — never the CLI's `Explorer:` line, whose `pdp.vxb.ai` host redirects every path to the explorer home and drops the piece) listing every data set and provider holding the piece and its live proving status. "Trace this share" is the user-facing link to it.
 _Avoid_: Locate, find the piece, explorer link
 
 **Share ledger**:
