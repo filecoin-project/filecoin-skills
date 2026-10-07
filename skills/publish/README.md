@@ -97,6 +97,8 @@ Copies
 
 Your link is the **Root CID**: `https://inbrowser.link/ipfs/<root-cid>`
 
+To trace the stored piece, use `https://pdp.filecoin.cloud/mainnet/piece/<piece-cid>` — not the `Explorer:` line above: its `pdp.vxb.ai` host now redirects to the explorer home page and loses the piece.
+
 It arrives twice — first labeled *propagating* the moment the CID is known, then **verified** once IPNI indexing and a provider gateway both serve it. Every publish is also appended to a private local ledger at `~/.filecoin-share/shares.json` — the source of truth for root and piece CIDs, data set IDs, and notes. Ask the agent "what have I published?" to read it back. It stays on this machine: never stored on-chain, never shared. Relocate it with a symlink:
 
 ```bash
