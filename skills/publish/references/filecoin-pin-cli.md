@@ -115,7 +115,7 @@ Copies
     Data Set ID: <n>
     Piece ID: <n>
     Retrieval URL: https://<provider>/piece/<piece-cid>
-    Explorer: https://pdp.vxb.ai/<network>/piece/<piece-cid>
+    Explorer: https://pdp.filecoin.cloud/<network>/piece/<piece-cid>
 ```
 
 The IPNI verification after upload is warning-only: `IPNI provider records not found` does not fail the add. A partial-copy result (`Got 1/2 copies ... Add completed with errors`) still means the content is stored and retrievable from the successful copy; redundancy is reduced. Repair by targeting an existing healthy data set directly (`--copies 1 --data-set-id <id>`); providers deduplicate stored bytes, so the re-run is nearly instant and only the missing copy does real work. Avoid `--provider-id` for repairs: it creates a brand-new data set even when the provider already holds matching data sets, stacking billing floors.
@@ -193,7 +193,7 @@ Notes:
 - `curl -sI https://dweb.link/ipfs/<cid>` returns `301` to `https://<cid>.ipfs.dweb.link/`; use `curl -sIL` and check the final status is `200`.
 - On dweb.link, `?format=car` (or `Accept: application/vnd.ipld.car`) returns the whole DAG as a CAR; `Accept: application/vnd.ipld.raw` returns a single block.
 - Public gateways are rate-limited and best-effort; production retrieval should use verified-fetch, Helia, Kubo, or your own gateway.
-- The add summary's `Explorer:` line prints `https://pdp.vxb.ai/<network>/piece/<piece-cid>` — a dead link: that host now 301s every path to the bare explorer home (`https://pdp.filecoin.cloud/<network>`), dropping the piece. Never relay it; construct the piece page yourself as `https://pdp.filecoin.cloud/<network>/piece/<piece-cid>`.
+- The add summary's `Explorer:` line prints the PDP Explorer piece page, `https://pdp.filecoin.cloud/<network>/piece/<piece-cid>` (v2.2.0+).
 
 ## Troubleshooting
 
