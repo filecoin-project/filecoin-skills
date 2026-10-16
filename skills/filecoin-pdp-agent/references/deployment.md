@@ -1,6 +1,6 @@
 # Deploy or adopt a PDP provider
 
-Use this workflow to turn the selected release's official deployment instructions into a verified provider. Obtain the actual installation commands, prerequisites, profile files, configuration inputs, and API parameters from those instructions. Use [api.md](api.md) as a versioned API lookup aid and [maintenance.md](maintenance.md) when existing datasets or shared services make an interruption consequential.
+Use this workflow to turn the selected release's official deployment instructions into a verified provider. Obtain the actual installation commands, prerequisites, profile files, configuration inputs, and API parameters from those instructions. Use [api.md](api.md) as an API lookup aid and [maintenance.md](maintenance.md) when existing datasets or shared services make an interruption consequential.
 
 ## 1. Identify the deployment and its authoritative procedure
 
@@ -8,9 +8,9 @@ Read the operating record and inspect the target host separately from the agent 
 
 Adopt existing Skiff or full Curio in place. Retain active configuration layers and account for other cluster workloads. For a new PDP-only provider, select the supported PDP deployment path documented for the chosen release and host capabilities.
 
-Read the official deployment guide and applicable release notes. Obtain the matching release's deployment artifacts and configuration guidance; resolve any difference from examples bundled with this skill before executing the affected step. Record the chosen artifact/version, source references, host-specific procedure and current incomplete stage. Use the entrypoint's documentation fallback when the site is unavailable or unversioned.
+Select the installation target under the entrypoint's [release policy](../SKILL.md#release-selection), then read its official deployment guide and applicable release notes. Obtain the matching deployment artifacts and configuration guidance; resolve any difference from examples bundled with this skill before executing the affected step. Record the chosen artifact/version, source references, host-specific procedure and current incomplete stage. Use the entrypoint's documentation fallback when the site is unavailable or unversioned.
 
-Obtain the deployment files yourself. The installed skill is a standalone package; its repository and parent directories are not a Curio checkout or runtime. When the selected guide starts from a source checkout, install Git if missing and clone the [official Curio repository](https://github.com/filecoin-project/curio) into the target's operational workspace, selecting the chosen release's tag or commit. Reuse an appropriate existing checkout without discarding local changes. Keep the checkout, deployment configuration and persistent service data outside the installed skill directory; place them on the storage required by the guide and record their locations. A checkout supplies deployment files and documentation; use published images or binaries when the guide supports them, and build only when the selected procedure requires it.
+Obtain the deployment files yourself. The installed skill is a standalone package; its repository and parent directories are not a Curio checkout or runtime. When the selected guide starts from a source checkout, install Git if missing and clone the [official Curio repository](https://github.com/filecoin-project/curio) into the target's operational workspace, selecting the chosen target's tag, operator-specified branch, or resolved commit. Reuse an appropriate existing checkout without discarding local changes. Keep the checkout, deployment configuration and persistent service data outside the installed skill directory; place them on the storage required by the guide and record their locations. A checkout supplies deployment files and documentation; use published images or binaries when the guide supports them, and build only when the selected procedure requires it.
 
 **Advance when:** the target, existing identities, intended network/release and applicable procedure are known. Resume from the incomplete stage rather than repeating completed setup.
 
@@ -41,9 +41,11 @@ Discover existing storage and candidates through the GUI API. Match container-vi
 
 Inspect public wallet status before creating or importing anything. Preserve an existing provider key. Use the release's supported wallet operation and the protected input/output handling described in [api.md](api.md); keep recovery material in the delegated secret storage and public identifiers in the operating record.
 
-Verify the network and known available funds against the release's required transactions and the user's operating allowance. Replenish from an authorized source when covered; otherwise provide the public address and exact funding need. A balance lookup failure does not establish an empty wallet. Reconcile an interrupted key operation through status before attempting it again.
+Budget the selected network/release's registration value and gas for all required setup transactions, including any separate marker update. The remaining balance must stay strictly above the effective `Alerting.MinimumWalletBalance` and meet the user's operating reserve, within the delegated allowance. For example, a **5 tFIL registration value** and **5 tFIL balance threshold** require more than **10 tFIL plus setup gas** before registration; derive the actual budget from the deployed fee and effective configuration. A balance at or below the threshold raises a balance alert and makes `/pdp/ping` return 503 once the alert check runs. Ping reflects cached alert state; use a fresh balance and refreshed alerts/ping to verify readiness after funding or spending.
 
-**Advance when:** the intended wallet is configured, its recovery reference is retained, and known funding covers the next authorized operations. Endpoint preparation can continue while funding or chain access is pending.
+Replenish from an authorized source when covered; otherwise provide the public address and exact funding need. A balance lookup failure does not establish an empty wallet. Reconcile an interrupted key operation through status before attempting it again.
+
+**Advance when:** the intended wallet is configured, its recovery reference is retained, and known funding covers setup costs and the required remaining reserve. Endpoint preparation can continue while funding or chain access is pending.
 
 ## 5. Configure and verify the effective public endpoint
 
@@ -59,13 +61,13 @@ Verify the effective service URL and listener after applying the change, then te
 
 Read registry state first. For an existing provider, change only the intended differences. For a new one, obtain the release's registration arguments, units, required funds, offering defaults and confirmation procedure from its documentation. Resolve any missing published identity information from the user's mandate.
 
-When deploying or taking over a provider for ongoing agent operation, identify it with the single custom registry capability `curioOperator` set to `filecoin-pdp-agent`. Read current capabilities first; if this value already matches, no marker update is needed. Preserve all unrelated capabilities and offering values. Include the marker in the initial registration or another already-required offering update when the deployed API supports it; otherwise follow the versioned procedure in [api.md](api.md). Keep it stable across sessions and upgrades, without adding model, runtime, skill-version or heartbeat metadata. Submit any required update within the delegated transaction budget and verify its readback; a failed marker update remains pending independently of provider health.
+When deploying or taking over a provider for ongoing agent operation, identify it with the single custom registry capability `curioOperator` set to `filecoin-pdp-agent`. Read current capabilities first; if this value already matches, no marker update is needed. Preserve all unrelated capabilities and offering values. Include the marker in the initial registration or another already-required offering update when the deployed API supports it; otherwise use the separate-update guidance in [api.md](api.md) when applicable. Keep it stable across sessions and upgrades, without adding model, runtime, skill-version or heartbeat metadata. Submit any required update within the delegated transaction budget and verify its readback; a failed marker update remains pending independently of provider health.
 
 Derive offered capacity from the actual allocation and obligations, allowing working space for the offered piece sizes and concurrent ingestion. Do not round an allocation up to satisfy a field requirement. A local readiness threshold does not validate an advertised offering. Inspect which fields the deployed update operation actually changes and read the resulting offering back.
 
 Record submission identifiers and observe the receipt plus registry outcome through the documented interfaces. Some registration paths may submit directly rather than through Curio's task message queue; use the applicable transaction history or targeted logs for reconciliation. An empty queue, lost response or momentary unregistered status cannot establish that an earlier submission never occurred. Keep unresolved submissions pending instead of repeating them blindly.
 
-**Advance when:** confirmation and registry readback show the intended active provider, endpoint and offer. If required behavior or a prior submission's outcome remains unresolved, report that specific gap while continuing independent setup.
+**Advance when:** confirmation and registry readback show the intended active provider, endpoint and offer; the post-transaction balance and refreshed health checks meet the funding requirement in step 4. If required behavior or a prior submission's outcome remains unresolved, report that specific gap while continuing independent setup.
 
 ## Completion
 
@@ -77,6 +79,7 @@ Follow authorized test data through upload, confirmed piece membership, retrieva
 
 Use these to locate the applicable release guidance, following the site's navigation or release tree if pages move:
 
-- [Curio documentation](https://docs.curiostorage.org/), including [Curio-PDP](https://docs.curiostorage.org/curio-pdp) and [Skiff](https://docs.curiostorage.org/skiff-binary).
+- [Curio documentation](https://docs.curiostorage.org/), including [Curio-PDP](https://docs.curiostorage.org/getting-started/curio-pdp).
+- [Skiff binary guide](https://github.com/filecoin-project/curio/blob/main/documentation/en/skiff-binary.md); use the documentation matching the installed/target release.
 - [Curio releases](https://github.com/filecoin-project/curio/releases) for published versions, artifacts and migration notes.
 - [Documentation source](https://github.com/filecoin-project/curio/tree/main/documentation/en) for the repository copy; select the installed/target tag before following version-dependent instructions. Use the deployment artifacts linked by that release's guide.

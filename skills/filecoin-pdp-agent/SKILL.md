@@ -42,13 +42,20 @@ For a fresh host, carry out bootstrap through the deployment recipe: install mis
 | Release check, upgrade, restart, backup, or recovery                         | [Maintenance](references/maintenance.md) |
 | Credible suspected bug with optional upstream reporting                      | [GitHub process](references/github.md)   |
 
-Read only the references needed for the current work. Use the installed release for current operations and the selected target release for deployment or upgrade. Before an unfamiliar procedure or mutation, read the relevant official guide and release notes; obtain commands, paths, inputs, prerequisites, API arguments/units, and reload behavior from matching documentation and shipped artifacts or runtime schema. Bundled version-specific examples are lookup aids; they do not override those sources.
+Read only the references needed for the current work.
+
+## Release selection
+
+Install the latest stable Curio release and target the latest stable release for upgrades unless the operator explicitly specifies a branch or release candidate. Determine the latest stable release from official Curio release metadata, excluding drafts and prereleases. A branch head or mutable image tag alone does not establish stable-release status. Record an operator override and its resolved artifact in the deployment record, and honor that choice across sessions. If the intended target is incompatible with the host, network, or upgrade path, report the constraint before deployment or upgrade. Release selection does not expand upgrade authority or bypass the maintenance procedure.
+
+Use the installed release for current operations and the selected target release for deployment or upgrade. Before an unfamiliar procedure or mutation, read the relevant official guide and release notes; obtain commands, paths, inputs, prerequisites, API arguments/units, and reload behavior from matching documentation and shipped artifacts or runtime schema. Bundled examples are lookup aids; they do not override those sources.
 
 If the documentation site is unavailable or describes another release, use the matching packaged or repository documentation. Inspect a matching handler only to resolve a specific unanswered operational question. When required behavior remains uncertain, continue independent work and report the gap before the dependent mutation. Record the source and applicable release in the deployment record; reuse verified procedures until the version, deployment profile, schema, or observed behavior changes.
 
 ## Operating boundaries
 
-- Carry standing authorization across sessions. Routine remediation and upgrades can run autonomously when covered; an inspection-only request remains read-only. Continue independent authorized work while awaiting a necessary human decision.
+- Carry standing authorization across sessions. Routine remediation, including service restarts, and upgrades can run autonomously when covered; an inspection-only request remains read-only. Continue independent authorized work while awaiting a necessary human decision.
+- Treat alert and readiness thresholds as operating policy. Justify changes against the operator's reserve, allocated funds, and expected workload; ask when that policy decision exceeds delegation. Resolve the underlying condition and verify recovery rather than lowering a threshold solely to clear an alert or make a health check pass.
 - Local tools may create/import and operate the dedicated funded provider wallet. Preserve its identity and protected recovery material. Keep spending and payouts within the user's delegation.
 - Prefer an operator-controlled local or privately hosted model; check actual routing and fallbacks. Keep private keys, wallet exports, and credentials out of model context, including tool arguments/results, regardless of model hosting. Handle secret values inside local tools and return only public fields or secret references. Filter secret-bearing output before it reaches the model; keep secrets out of operating records, source control, and issue reports. Follow [wallet handling](references/api.md#wallet-handling) for creation or import.
 - Respect shared Curio infrastructure and existing storage obligations. Use semantic operations that preserve task ownership, transaction tracking, and dataset lifecycle. Direct DB diagnostics, including `SQLQuery`, are exceptional and read-only. During debugging, do not delete rows, truncate or drop tables/databases, or reset protocol state with ad hoc writes. An API gap or failed task does not authorize destructive repair.
@@ -60,13 +67,15 @@ If the documentation site is unavailable or describes another release, use the m
 Maintain one concise, non-secret deployment record in the user's operational workspace, outside this reusable skill. Reuse an existing record and store:
 
 - Host/cluster identity, network, build and artifact version, API address, supervisor, volume mappings, storage IDs, and references to credentials/recovery material.
-- Public wallet/provider identifiers, allocated resources, spending limits/reserve, upgrade policy, and reporting/notification authority already granted.
+- Public wallet/provider identifiers, allocated resources, spending limits/reserve, upgrade policy and any operator-selected branch or release candidate, and reporting/notification authority already granted.
 - Pending actions and their task/dataset/transaction IDs, last observations and timestamps, unresolved incidents, next checks, and any issue links with evidence already posted.
 - Actual scheduler job IDs, cadence, notification destination, and last successful run.
 
 Treat the record as operating memory; Curio and the chain remain authoritative for current provider state. Update pending actions before initiating a consequential change and record observed results afterward. On resumption, reconcile them before proceeding.
 
 For delegated ongoing operation, register periodic invocation using the agent host's supported scheduler. Reuse or update existing jobs and honor the user's chosen cadence. Otherwise start with one brief daily health-and-earnings check and a weekly release review. Each healthy check should read the summary APIs, update the operating record, report as agreed, and finish. Curio's continuous operation, retries, cleanup, and alerts remain its responsibility; do not keep an agent session open, poll every proof window, or create overlapping health/financial jobs for a healthy provider.
+
+Scheduled invocations inherit the operator's standing delegation, deployment scope, spending limits, and reporting authority. They may use supported operations covered by that delegation without a separate list of approved API methods or repairs. Inspection-only jobs keep provider access read-only while updating local records/reports. For those jobs, distinguish enforced read-only access from an instruction to avoid mutations: JSON-RPC reads also use HTTP POST, and unrestricted shell or `curl` access can mutate the provider. Report the effective access accurately.
 
 Temporarily check more often for an actionable alert, active incident, deployment/upgrade verification, or a pending operation with a deadline. Choose the next observation from actual progress and the nearest relevant deadline, then return to the normal cadence once verification is complete. Prevent overlapping mutations for the same deployment and verify that both service supervision and agent scheduling persist as intended across reboot.
 

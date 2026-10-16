@@ -6,7 +6,7 @@ Let your AI agent help you earn on Filecoin using your spare hardware and storag
 
 ## Install
 
-Choose one method. The distribution repository is [filecoin-project/filecoin-skills](https://github.com/filecoin-project/filecoin-skills). GitHub installation requires the skill directory to be published on its default branch.
+Choose one method. The distribution repository is [filecoin-project/filecoin-skills](https://github.com/filecoin-project/filecoin-skills). The commands below work once the skill directory is published on its default branch.
 
 ### Skills CLI
 
@@ -36,6 +36,6 @@ Run your agent with access to the target machine, locally or through an availabl
 Use filecoin-pdp-agent to set up and run a Filecoin PDP provider on this machine. I authorize full agent control of this provider, including access to the private keys Curio uses and the funds I allocate. Handle installation and ongoing operation. Ask me for any missing storage, funding or access decisions.
 ```
 
-The agent inspects the host, resolves missing resource decisions, installs supported prerequisites, clones Curio when the selected deployment guide requires it, and deploys the required services. It then configures storage, the dedicated provider wallet and public endpoint, completes registration, verifies readiness, and schedules periodic health and earnings checks. An existing provider is adopted in place. Curio runs continuously on its own; the agent checks in periodically and follows up more closely when an issue needs attention.
+The agent uses the latest stable Curio release for installation and upgrades unless you specify a branch or release candidate. It inspects the host, resolves missing resource decisions, installs supported prerequisites, clones Curio when the selected deployment guide requires it, and deploys the required services. It then configures storage, the dedicated provider wallet and public endpoint, completes registration, verifies readiness, and schedules periodic health and earnings checks. An existing provider is adopted in place. Curio runs continuously on its own; the agent checks in periodically and follows up more closely when an issue needs attention.
 
 Provide the host access, storage allocation and operating funds the agent requests. The agent handles routine deployment, recovery and maintenance within your delegation, asking for human action when necessary access or a decision is missing. Ongoing checks require a working scheduler; the agent verifies and reports whether one is active. Installation alone adds the skill; the request above starts provider setup and operation.

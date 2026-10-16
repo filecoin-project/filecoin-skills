@@ -5,7 +5,7 @@ Use [api.md](api.md) for Curio controls and [operations.md](operations.md) for h
 ## Decide whether to change anything
 
 1. Read the installed Curio version, build variant, network, and deployment method. Identify chain/DB versions when compatibility or the requested change depends on them. Inventory the affected components rather than auditing the entire host on every check.
-2. Consult official release notes and matching compatibility guidance. Distinguish released artifacts from changes on `main` or merged PRs. Verify the selected artifact supports the host architecture, network, and variant; a full-Curio sealing fix alone does not establish urgency for healthy Skiff.
+2. Select the upgrade target under the entrypoint's [release policy](../SKILL.md#release-selection), then consult its official release notes and matching compatibility guidance. Verify the selected artifact supports the host architecture, network, variant, and upgrade path; a full-Curio sealing fix alone does not establish urgency for healthy Skiff.
 3. State the available version, applicable benefit/fix, urgency or network deadline, dependencies, and expected interruption. For a notify-only policy, finish with that recommendation. When an applicable upgrade is requested or covered by standing automatic-upgrade authority, continue through preparation and verification without asking again.
 4. If a required decision exceeds that authority, prepare the exact target and recovery options first, then bring only the unresolved decision to the operator. Unavailable release information means the recommendation is unverified; preserve that uncertainty.
 
