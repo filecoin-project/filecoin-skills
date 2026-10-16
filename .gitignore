@@ -4,3 +4,14 @@
 node_modules/
 docs/
 .lavish/
+
+
+## IDE
+.idea
+.vscode
+
+## AI
+## Agent and AI
+.agents
+.claude
+skills-lock.json
