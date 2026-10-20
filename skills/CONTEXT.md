@@ -1,6 +1,6 @@
 # filecoin-skills suite
 
-Language shared by every skill in the suite. Each skill's own CONTEXT.md carries its workflow-specific terms.
+Vocabulary for publishing and retrieving content. Each skill documents its workflow-specific terms; provider operation uses the terminology in its own references.
 
 ## Language
 
