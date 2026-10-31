@@ -42,7 +42,7 @@ The Grant gives this session key permanent read access to all your encrypted upl
 
 The agent writes `snapshot.md`, checks it, uploads it encrypted, and records the save in `~/.filecoin-share/sessions.json`. A share prints a Share link and an Access key as two labelled items. Send them by different channels.
 
-On the receiving side, give the agent the link and the Access key. Or set the key in the shell you start the agent from first, so it stays out of the chat:
+On the receiving side, give the agent the link, and keep the Access key out of the chat. Set it in the shell you start the agent from, or the agent asks you to save it in a key file only you can read:
 
 ```bash
 read -rs SHARE_ACCESS_KEY && export SHARE_ACCESS_KEY   # paste the key, press Enter

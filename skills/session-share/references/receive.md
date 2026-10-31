@@ -17,22 +17,11 @@ out="$(mktemp -d)" && echo "$out"
 
 ## 2. From a share
 
-If the user set `SHARE_ACCESS_KEY` in the shell they started the agent from, the CLI reads it. Check without printing it:
+Follow "The Access key" under `get --share` in `filecoin-pin-cli.md` to get the key to the CLI without it entering the chat, then open the share:
 
 ```bash
-test -n "$SHARE_ACCESS_KEY" && echo key-set
+filecoin-pin get --share '<link>' "$out"
 ```
-
-Then:
-
-Then:
-
-```bash
-filecoin-pin get --share '<link>' "$out"                          # key in SHARE_ACCESS_KEY
-filecoin-pin get --share '<link>' "$out" --access-key 'fak1_…'    # no key-set: the key the user gave you
-```
-
-Don't repeat the key in your replies.
 
 Add `--network calibration` when the sender said the share is on calibration. Always single-quote the link: it contains `#` and `&`. Errors are listed under `get --share` in `filecoin-pin-cli.md`.
 
@@ -52,7 +41,7 @@ filecoin-pin get <cid> "$out"
 
 ## 4. Read and present
 
-`get` prints `Saved to <path>`. The snapshot is `<path>/snapshot.md`; bundled files are in `<path>/artifacts/`.
+`get` prints the saved path. The snapshot is `<path>/snapshot.md`; bundled files are in `<path>/artifacts/`.
 
 Check the format: frontmatter with `version: 1`, `createdAt` and `origin`, and the four headings `## Decisions`, `## Constraints`, `## Artifacts`, `## Open threads`. If something is missing, say so and present what is there.
 

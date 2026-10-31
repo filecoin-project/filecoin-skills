@@ -5,7 +5,7 @@ Commands, credentials and errors are in `filecoin-pin-cli.md` next to this file.
 Which flow:
 
 - "save", "pin", "encrypt" this session: steps 1 to 5.
-- "share this session with …": steps 1 to 6. If the ledger already has a save of this session and nothing has changed since, skip to step 6 with that CID.
+- "share this session with …": steps 1 to 5, with `--get-share-link-restricted` in step 5, then hand over as in step 6 without running its command. If the ledger already has a save of this session and nothing has changed since, run step 6 with that CID instead.
 - "share my last session": step 6 only, with the newest ledger entry whose `project` is the current project. No entry for this project: show the newest entries and ask which one.
 
 ## 1. Check the CLI and credentials
@@ -86,7 +86,9 @@ grep -rlE 'fak1_|fgr1_|-----BEGIN [A-Z ]*PRIVATE KEY|(^|[^0-9a-fA-F])(0x)?[0-9a-
 filecoin-pin add "$dir" --encrypt --egress-provider none --no-update-check
 ```
 
-Run it in the background and poll; it takes one to a few minutes. The `Root CID:` line under `Add Details` is the Encrypted root CID. Funding errors: see `filecoin-pin-cli.md`.
+To share in the same run, add `--get-share-link-restricted`: one command, and no second read of the header from the provider. With the owner wallet, run it with `--dry-run` first and show the user the cost.
+
+Run it in the background and poll; it takes one to a few minutes. Let it finish: a slow upload is not a failed one. Never stop it to start again. The root CID in the summary is the Encrypted root CID. Funding errors: see `filecoin-pin-cli.md`.
 
 If `add` fails or exits `2`, never run it again to recover: follow Troubleshooting in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload. Record the ledger entry only once the save is confirmed.
 

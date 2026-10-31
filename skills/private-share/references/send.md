@@ -20,13 +20,15 @@ New content:
 filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider none --no-update-check
 ```
 
+With the owner wallet, run it with `--dry-run` first and show the user the cost (see `add` in `filecoin-pin-cli.md`).
+
 An earlier encrypted upload, named by its Encrypted root CID:
 
 ```bash
 filecoin-pin get-share-link <encrypted-root-cid> --restricted
 ```
 
-If `add` stored the upload but warned that the share failed, run `get-share-link --restricted` with the `Root CID:` from the summary. With calibration, add `--network calibration` to both commands.
+If `add` stored the upload but warned that the share failed, run `get-share-link --restricted` with the root CID from the summary. With calibration, add `--network calibration` to both commands.
 
 If `add` fails or exits `2`, never run it again to recover: follow Troubleshooting in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload.
 

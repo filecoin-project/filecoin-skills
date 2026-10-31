@@ -56,7 +56,7 @@ Access key (send by a different channel, e.g. a chat message):
 fak1_…
 ```
 
-Receive: give the agent the link and the Access key. Or set the key in the shell you start the agent from first, so it stays out of the chat. `read -rs` takes it without echoing it:
+Receive: give the agent the link, and keep the Access key out of the chat. Set it in the shell you start the agent from (`read -rs` takes it without echoing it), or the agent asks you to save it in a key file only you can read:
 
 ```bash
 read -rs SHARE_ACCESS_KEY && export SHARE_ACCESS_KEY   # paste the key, press Enter

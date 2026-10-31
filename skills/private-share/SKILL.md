@@ -23,5 +23,6 @@ Read only the file the request needs:
 - Wallet keys, session keys and Grants never enter the conversation, command output you show, logs, or files you write. Check secrets files with boolean tests only (`test -f`, `grep -q`).
 - Show the Access key once, labelled, apart from the link. Tell the user to send the two by different channels. Never write the key to a file, ledger or log, and never repeat it later.
 - Always make restricted links (`--restricted`, `--get-share-link-restricted`), so the link and the Access key stay apart.
+- Run `add --encrypt` once per request (a `--dry-run` before it doesn't count: it uploads nothing). Never run it again after it fails, exits `2`, or seems stuck, and never stop a running one to start over: every run uploads and pays again under a new CID. The only exception is the funding stop, which exits before anything is packed. Otherwise follow Troubleshooting in `references/filecoin-pin-cli.md`, or tell the user.
 - Single-quote every Share link in a shell: it contains `#` and `&`.
 - "Not altered" means integrity: every block matched the CID and the envelope rejected changes. Never claim it proves who made the content.

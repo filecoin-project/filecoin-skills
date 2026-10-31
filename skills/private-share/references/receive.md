@@ -12,28 +12,19 @@ Run the version check from `filecoin-pin-cli.md`. No `sharing-ok`: stop and tell
 
 Use the folder the user named. If they named none, ask. The CLI creates the folder if needed and never overwrites a file in it.
 
-## 3. Get the Access key to the CLI
+## 3. Open the share
 
-If the user set `SHARE_ACCESS_KEY` in the shell they started the agent from, the CLI reads it. Check without printing it:
-
-```bash
-test -n "$SHARE_ACCESS_KEY" && echo key-set
-```
-
-No `key-set`: pass the key the user gave you with `--access-key` in step 4. Don't repeat it in your replies.
-
-## 4. Open the share
+Follow "The Access key" under `get --share` in `filecoin-pin-cli.md` to get the key to the CLI without it entering the chat, then open the share into the output folder:
 
 ```bash
-filecoin-pin get --share '<link>' <output-dir>                         # key in SHARE_ACCESS_KEY
-filecoin-pin get --share '<link>' <output-dir> --access-key 'fak1_…'   # key the user gave you
+filecoin-pin get --share '<link>' <output-dir>
 ```
 
 Add `--network calibration` when the sender said the share is on calibration. Always single-quote the link: it contains `#` and `&`.
 
-## 5. Report
+## 4. Report
 
-Give the user the `Saved to <path>` path on its own line.
+Give the user the saved path on its own line.
 
 What the check proves: `get --share` checked every block against the CID in the link, and the encryption envelope rejects any change to the content. So the saved content is exactly what the link names, unaltered. It does not prove who made it.
 
