@@ -32,6 +32,6 @@ _Avoid_: Private link, secret link
 The secret half of a Share link: the throwaway private key the link's key is wrapped to, written `fak1_…`. Each link has its own. Skills show it once, apart from the link, and never store it. Whoever holds the link and its Access key can read that upload.
 _Avoid_: Password, share key, decryption key
 
-**Snapshot**:
-The `snapshot.md` that `session-share` saves: YAML frontmatter (`version`, `createdAt`, `origin`) and four sections, Decisions, Constraints, Artifacts and Open threads. A summary of a session, never its transcript.
-_Avoid_: Session dump, transcript, memory file
+**Handoff**:
+The `handoff.md` that `session-share` saves for the next agent: YAML frontmatter (`version`, `createdAt`, `origin`) and four sections, Decisions, Constraints, Artifacts and Open threads. A summary of a session, never its transcript.
+_Avoid_: Snapshot, session dump, transcript, memory file

@@ -12,7 +12,7 @@ Which flow:
 
 Run the version check, the credentials check and the network check from `filecoin-pin-cli.md`. Log in with `encrypt` if the credentials check fails.
 
-## 2. Write the snapshot
+## 2. Write the handoff
 
 Write it in this turn from what you already know about the session. No extra model call.
 
@@ -28,7 +28,7 @@ dir="$(mktemp -d)/session-$(date -u +%Y%m%dT%H%M%SZ)" && mkdir -p "$dir" && echo
 date -u +%Y-%m-%dT%H:%M:%SZ   # createdAt
 ```
 
-Write `$dir/snapshot.md` in exactly this shape. `origin` takes the values from "Origin values" in `SKILL.md`; leave out a field you don't have.
+Write `$dir/handoff.md` in exactly this shape. `origin` takes the values from "Origin values" in `SKILL.md`; leave out a field you don't have.
 
 ```markdown
 ---
@@ -62,7 +62,7 @@ Then reread it once: every open thread is still open, every state you mention ma
 
 ## 3. Bundle named artifacts
 
-Only files the user named ("include the report") go in the snapshot. Copy each one:
+Only files the user named ("include the report") are bundled with the handoff. Copy each one:
 
 ```bash
 mkdir -p "$dir/artifacts" && cp <named-file> "$dir/artifacts/"
@@ -75,7 +75,7 @@ Never copy a `.env` file, a key file, or anything the user didn't name. List eac
 Format check. All five lines must print `ok`:
 
 ```bash
-f="$dir/snapshot.md"
+f="$dir/handoff.md"
 head -1 "$f" | grep -qx -- '---' && grep -qx 'version: 1' "$f" && grep -qE '^createdAt: [0-9]{4}-' "$f" && grep -qE '^origin: \{ ?tool: [a-z]' "$f" && echo ok
 for h in 'Decisions' 'Constraints' 'Artifacts' 'Open threads'; do grep -qx "## $h" "$f" && echo ok; done
 ```
@@ -86,7 +86,7 @@ Secret scan. It prints file names only, never the matching text:
 grep -rlE 'fak1_|fgr1_|-----BEGIN [A-Z ]*PRIVATE KEY|(^|[^0-9a-fA-F])(0x)?[0-9a-fA-F]{64}([^0-9a-fA-F]|$)|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36}|sk-[A-Za-z0-9_-]{20,}|xox[abprs]-|^[A-Z0-9_]*(KEY|SECRET|TOKEN|PASSWORD)[A-Z0-9_]*=' "$dir"
 ```
 
-- A match in `snapshot.md`: find the line you wrote and remove the secret. A 64-character hex string can be a transaction hash, which is fine to keep. Run the scan again.
+- A match in `handoff.md`: find the line you wrote and remove the secret. A 64-character hex string can be a transaction hash, which is fine to keep. Run the scan again.
 - A match in a bundled file: stop. Tell the user which file matched and ask whether to drop it.
 
 ## 5. Save
@@ -155,12 +155,12 @@ fak1_…
 
 Then, in short bullets:
 
-- what the snapshot holds: a summary of decisions, constraints, artifacts and open threads; no transcript, no keys;
+- what the handoff holds: a summary of decisions, constraints, artifacts and open threads; no transcript, no keys;
 - who can read it: only the user (the owner wallet, or a session key with their Grant), plus, when shared, whoever holds both the link and the Access key. A share can't be revoked;
 - when shared: the receiving agent restores it with this skill (`filecoin-pin get --share`). The Access key isn't saved anywhere, so send it now; another `get-share-link` makes a new link and key;
 - not yet confirmed: the warning and the `piece-status` command from "Upload stored but not confirmed" in `filecoin-pin-cli.md`;
 - calibration: the recipient passes `--network calibration` too.
 
-**Sharing right after a save in this conversation** (the user said yes to the question in step 5): the save reply already gave the status, the CID and the bullets. Reply with only the Share link and the Access key block, then only the bullets that are new: who can read it now (whoever holds both; a share can't be revoked), how the recipient opens it (this skill, `filecoin-pin get --share`), and that the key isn't saved anywhere, so send it now. Don't repeat the status line, the CID, what the snapshot holds, the redundancy or the network note.
+**Sharing right after a save in this conversation** (the user said yes to the question in step 5): the save reply already gave the status, the CID and the bullets. Reply with only the Share link and the Access key block, then only the bullets that are new: who can read it now (whoever holds both; a share can't be revoked), how the recipient opens it (this skill, `filecoin-pin get --share`), and that the key isn't saved anywhere, so send it now. Don't repeat the status line, the CID, what the handoff holds, the redundancy or the network note.
 
 After this reply, never repeat the Access key, and never write it to the ledger, a file or a log.

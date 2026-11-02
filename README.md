@@ -16,7 +16,7 @@ That's what these skills give your agents. *Warm* storage means retrievable now,
 |---|---|---|
 | [`publish`](./skills/publish/) | stable | Publish any local file or folder to Filecoin Warm Storage and get a public, verified CID link. |
 | [`private-share`](./skills/private-share/) | preview | Encrypt a file or folder, share it with one recipient as a Share link plus a separate Access key, and open shares you receive. |
-| [`session-share`](./skills/session-share/) | preview | Save the current session as an encrypted snapshot, share it, and restore it in another agent. |
+| [`session-share`](./skills/session-share/) | preview | Save the current session as an encrypted handoff, share it, and restore it in another agent. |
 | [`filecoin-pdp-agent`](./skills/filecoin-pdp-agent/) | preview | Deploy and operate a Curio PDP provider, with periodic health and earnings checks, recovery, and upgrades. |
 
 ## Install
