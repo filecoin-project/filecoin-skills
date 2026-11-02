@@ -27,7 +27,7 @@ filecoin-pin login --scopes createDataSet,addPieces,encrypt
 Approve the session key in the console with your owner wallet. The console then shows a Grant (`fgr1_…`). Copy it and finish in your own terminal, not in the chat:
 
 ```bash
-pbpaste | filecoin-pin login --grant -
+pbpaste | filecoin-pin login --grant -     # Linux: wl-paste --no-newline, or xclip -o -selection clipboard
 ```
 
 The Grant gives this session key permanent read access to all your encrypted uploads, including future ones. Revoking or expiring the key does not take that back.

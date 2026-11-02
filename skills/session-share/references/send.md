@@ -90,7 +90,7 @@ To share in the same run, add `--get-share-link-restricted`: one command, and no
 
 Run it in the background and poll; it takes one to a few minutes. Let it finish: a slow upload is not a failed one. Never stop it to start again. The root CID in the summary is the Encrypted root CID. Funding errors: see `filecoin-pin-cli.md`.
 
-If `add` fails or exits `2`, never run it again to recover: follow Troubleshooting in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload. Record the ledger entry only once the save is confirmed.
+If `add` fails or exits `2`, never run it again to recover: follow Troubleshooting in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload. Record the ledger entry once the upload is stored, also when the commit is not confirmed yet: the CID stays the same. Tell the user if it is not confirmed.
 
 Then add one entry to the ledger at `~/.filecoin-share/sessions.json`. The entry holds only these fields. Never a summary, a title or a key:
 

@@ -21,6 +21,24 @@ Mainnet by default. Use calibration only when the user asks for it, for testing.
 
 The saved login records its own `NETWORK`. Before the first upload in a session, run `filecoin-pin balance --no-update-check` (with `--network calibration` when testing) and check that the network it reports matches. A mismatch: stop and tell the user.
 
+## Clipboard command
+
+Secrets (the Grant, the Access key) reach the CLI through the clipboard, so they never enter the chat. Find the paste command for this machine before asking the user to use it:
+
+```bash
+case "$(uname -s)" in
+  Darwin) echo pbpaste ;;
+  Linux)
+    if [ -n "${WAYLAND_DISPLAY:-}" ] && command -v wl-paste >/dev/null; then echo 'wl-paste --no-newline'
+    elif [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null; then echo 'xclip -o -selection clipboard'
+    elif [ -n "${DISPLAY:-}" ] && command -v xsel >/dev/null; then echo 'xsel --clipboard --output'
+    else echo none; fi ;;
+  *) echo none ;;
+esac
+```
+
+Below, `<paste>` is the command it printed. `none` means no clipboard (a headless or SSH session): use the no-clipboard fallback where one is given.
+
 ## Credentials
 
 Sending and restoring your own uploads need one of two credentials. Receiving a share needs none.
@@ -40,11 +58,13 @@ grep -q '^WALLET_ADDRESS=' "$f" && grep -q '^GROUP_KEY_GRANT=' "$f" && echo logi
 `login-ok` means the login can encrypt. Otherwise run the login:
 
 1. `filecoin-pin login --scopes createDataSet,addPieces,encrypt` (add `--no-browser` on a headless machine). The CLI opens or prints a console link. Give it to the user on its own line. The user connects the owner wallet in the console and approves.
-2. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to finish in their own terminal, after copying the Grant:
+2. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to copy the Grant and run this, in the session with a leading `!` or in their own terminal:
 
    ```bash
-   pbpaste | filecoin-pin login --grant -     # Linux: xclip -o -selection clipboard | filecoin-pin login --grant -
+   <paste> | filecoin-pin login --grant -
    ```
+
+   No clipboard (`none`): they run `filecoin-pin login --grant -` in their own terminal and paste the Grant at its prompt.
 
 3. Run the `login-ok` check again.
 
@@ -106,7 +126,13 @@ The Access key is a secret: whoever holds it and the link can read the share. Ke
    filecoin-pin get --share '<link>' <output-dir>
    ```
 
-2. **In a key file.** No `key-set`: ask the user to save the key in a file only they can read, by running this in their own terminal. The key is pasted at a hidden prompt, so it never shows on screen or in shell history:
+2. **In a key file.** No `key-set`: ask the user to copy the Access key and run this in the session, with the leading `!`. It writes the clipboard to a file only they can read and prints nothing, so the key stays out of the chat:
+
+   ```
+   ! (umask 077; mkdir -p ~/.filecoin-share && <paste> > ~/.filecoin-share/access-key)
+   ```
+
+   No clipboard (`none`): ask them to run this in their own terminal instead. The key is pasted at a hidden prompt, so it never shows on screen or in shell history:
 
    ```bash
    mkdir -p ~/.filecoin-share && read -rs k && printf %s "$k" > ~/.filecoin-share/access-key && chmod 600 ~/.filecoin-share/access-key && unset k
@@ -131,7 +157,10 @@ The CLI opens the payload with the key before downloading, so a wrong key fails 
 **Upload stored but not confirmed.** `add` exits `2`, or reports that the commit on a provider timed out, after the upload reached the provider. The transaction was submitted and may still confirm. Don't upload again:
 
 1. Keep the Encrypted root CID, the data set ID and the Piece CID from the output.
-2. Every few minutes, check the piece:
+2. If the user asked to share, run `get-share-link <encrypted-root-cid> --restricted` once. It uploads nothing, and the link stays the same once the upload is confirmed.
+   - It works: hand over the link and the Access key as usual, with this warning: the content is on the provider but not yet confirmed on chain. Until it is, it isn't proven or paid for, and the provider may remove it.
+   - It fails: say the link can be made once the piece is confirmed.
+3. Check the piece once:
 
    ```bash
    filecoin-pin data-set piece-status <data-set-id> <piece-cid>
@@ -139,8 +168,9 @@ The CLI opens the payload with the key before downloading, so a wrong key fails 
 
    Always pass the Piece CID: without it, the command opens an interactive pager that fails in an agent shell.
 
-3. Once the piece is listed as `active`, it is confirmed. Not listed, or `offchain orphaned` (the provider holds it, the chain doesn't yet), means not yet. When it is, make the share with `get-share-link <encrypted-root-cid> --restricted`. It reads the upload's header from the provider; nothing is uploaded again.
-4. Still unconfirmed after about 30 minutes: tell the user the content is stored but not confirmed, give them the CID and the data set ID, and stop. Retry `get-share-link` later; don't upload again.
+   - `active` or `onchain orphaned`: committed on chain. `onchain orphaned` only means the provider's own list hasn't caught up.
+   - `offchain orphaned` (the provider holds it, the chain doesn't), or not listed: not committed yet.
+4. Don't poll. Give the user the `piece-status` command to check later, with the CID and the data set ID. A share link already handed over needs nothing more. If the user still needs a link and step 2 failed, run `get-share-link` again once the piece is committed.
 
 **Only the second copy failed** (`Got 1/2 copies`). The content is stored on the first provider, and the share works. Report it as reduced redundancy, not a failure. Repair only if the user asks: `add` is not the repair (a new run means a new CID). Point them to the publish skill's repair steps, or the CLI's `data-set` commands.
 
