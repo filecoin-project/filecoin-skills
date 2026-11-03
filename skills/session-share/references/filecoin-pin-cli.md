@@ -86,9 +86,11 @@ filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider 
 - Leave out the share flag to store without sharing.
 - Never pass `--no-ipfs`. A Share link fetches the upload by its IPFS root CID, so a `--no-ipfs` upload can't be shared.
 - The root CID in the summary is the Encrypted root CID. The packing step prints the same value earlier.
-- Owner wallet mode doesn't check that the account can pay for this upload. Run the same command with `--dry-run` first: it prints the cost and uploads nothing. Show the cost to the user before the real run.
+- Owner wallet mode doesn't check that the account can pay for this upload. Run the same command with `--dry-run` first: it prints the cost and uploads nothing. Show the cost to the user, and run the real upload only after they say yes.
 - Session key mode checks funding before packing. When the account can't pay, it exits 1 with a pre-filled console funding link. Hand the link to the user, wait for them to fund, and run the same command again. This is the only case where you run `add` again yourself: it stops before packing, so nothing was uploaded.
-- An upload takes one to a few minutes. Run it in the background and poll the output. Let it finish: a slow upload is not a failed one. Never stop it to start again.
+- An upload takes one to a few minutes. Let it finish: a slow upload is not a failed one. Never stop it to start again.
+  - With a share flag, run it in the foreground with a long timeout (10 minutes). Its output holds the Access key, and a background run saves the whole output to a file.
+  - Without a share flag, you can run it in the background and poll the output.
 - **Never run `add --encrypt` again to recover from a failed or stuck upload.** Every run encrypts with a new random salt, so it makes a different CID and a second full, paid upload. Follow "Upload stored but not confirmed" in Troubleshooting instead.
 
 ## get-share-link: share an earlier upload
@@ -117,7 +119,7 @@ No CID argument: the link names the upload. No credentials. Mainnet by default; 
 
 ### The Access key
 
-The Access key is a secret: whoever holds it and the link can read the share. Keep it out of the chat and out of every command you write. Never ask the user to paste it, and never pass it with `--access-key` (a flag shows up in `ps` and shell history). Use the first case that applies:
+The Access key is a secret: whoever holds it and the link can read the share. Keep it out of the chat and out of every command you write; the only exception is case 3, when the user already pasted it. Never ask the user to paste it, and never pass it with `--access-key` (a flag shows up in `ps` and shell history). Use the first case that applies:
 
 1. **Already in the environment.** The user set it before starting the agent (`read -rs SHARE_ACCESS_KEY && export SHARE_ACCESS_KEY`). Check without printing it, then run the plain command; the CLI reads the variable:
 
@@ -138,15 +140,14 @@ The Access key is a secret: whoever holds it and the link can read the share. Ke
    mkdir -p ~/.filecoin-share && read -rs k && printf %s "$k" > ~/.filecoin-share/access-key && chmod 600 ~/.filecoin-share/access-key && unset k
    ```
 
-   When they say it's done, check it without reading it, open the share, and delete the file once the share opened:
+   When they say it's done, check it without reading it, then open the share and delete the file in the same command, whatever the result:
 
    ```bash
    test -s ~/.filecoin-share/access-key && echo key-file
-   SHARE_ACCESS_KEY="$(cat ~/.filecoin-share/access-key)" filecoin-pin get --share '<link>' <output-dir>
-   rm -f ~/.filecoin-share/access-key
+   SHARE_ACCESS_KEY="$(cat ~/.filecoin-share/access-key)" filecoin-pin get --share '<link>' <output-dir>; rm -f ~/.filecoin-share/access-key
    ```
 
-   After a wrong-key error, keep the file deleted and ask the user to save the key again.
+   This file is the one place the key touches disk: the user writes it, it is readable only by them, and it is gone after one try. To retry (a wrong key, or "not found yet"), ask the user to save the key again.
 
 3. **Pasted into the chat anyway.** It is already in this conversation's history, so use it: `SHARE_ACCESS_KEY='fak1_…' filecoin-pin get --share '<link>' <output-dir>`. Tell the user once that anyone who can read this conversation's history can open the share. Never repeat the key in your replies.
 

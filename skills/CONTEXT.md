@@ -33,5 +33,5 @@ The secret half of a Share link: the throwaway private key the link's key is wra
 _Avoid_: Password, share key, decryption key
 
 **Handoff**:
-The `handoff.md` that `session-share` saves for the next agent: YAML frontmatter (`version`, `createdAt`, `origin`) and four sections, Decisions, Constraints, Artifacts and Open threads. A summary of a session, never its transcript.
+The `handoff.md` that `session-share` saves for the next agent: YAML frontmatter (`version`, `createdAt`, `origin`) and five sections, Context, Decisions, Constraints, Artifacts and Open threads. A summary of a session, never its transcript. The transcript travels only as its own file next to it (`transcript.jsonl`), when the user asks for it and confirms.
 _Avoid_: Snapshot, session dump, transcript, memory file

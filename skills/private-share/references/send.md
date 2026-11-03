@@ -4,7 +4,7 @@ Commands, output formats and errors are in `filecoin-pin-cli.md` next to this fi
 
 ## 1. Check the CLI and credentials
 
-Run the version check, the credentials check and the network check from `filecoin-pin-cli.md`. Log in with `encrypt` if the credentials check fails.
+Run the version check and the network check from `filecoin-pin-cli.md`. If the user chose the owner wallet (`PRIVATE_KEY`), skip the credentials check: it only looks at the saved login. Otherwise run it, and log in with `encrypt` if it fails.
 
 ## 2. Check the scope
 
@@ -20,7 +20,7 @@ New content:
 filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider none --no-update-check
 ```
 
-With the owner wallet, run it with `--dry-run` first and show the user the cost (see `add` in `filecoin-pin-cli.md`).
+With the owner wallet, run it with `--dry-run` first, show the user the cost, and run the real upload only after they say yes (see `add` in `filecoin-pin-cli.md`). With the share flag, run it in the foreground: its output holds the Access key.
 
 An earlier encrypted upload, named by its Encrypted root CID:
 
