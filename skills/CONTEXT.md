@@ -24,13 +24,21 @@ _Avoid_: Public gateway (reserve for backend-fetching gateways like dweb.link), 
 The Root CID of an upload made with `filecoin-pin add --encrypt`. It names the encrypted envelope, not the plaintext. Share links carry it, and its owner restores the upload with `filecoin-pin get <CID>`.
 _Avoid_: Encrypted CID, ciphertext hash
 
+**Share** (encrypted sharing):
+One encrypted upload plus the Share link and Access key that open it; what `private-share` and `session-share` produce. In `publish`, "a share" is instead the published artifact and its ledger record; no skill uses both senses in its own prose.
+_Avoid_: Private share, encrypted link (names only the link, not the upload)
+
 **Share link**:
-A link that opens one encrypted upload for someone with no wallet or Grant, made by `filecoin-pin get-share-link` or `add --encrypt --get-share-link`. It names the Encrypted root CID and carries the upload's key, wrapped to a throwaway key pair, all in the URL fragment (`#v1/…`). By default the link also carries that key pair's private key and opens on its own. A restricted link (`--restricted`) leaves it out: the recipient also needs the Access key, sent separately. These skills only make restricted links.
+A link that opens one encrypted upload for someone with no wallet or Grant, made by `filecoin-pin get-share-link --restricted` or `add --encrypt --get-share-link-restricted`. It names the Encrypted root CID and carries the upload's key, wrapped to a throwaway key pair, all in the URL fragment (`#v1/…`). The unrestricted forms (no `--restricted`) make a link that also carries that key pair's private key and opens on its own; these skills never make one. A restricted link leaves it out: the recipient also needs the Access key, sent separately.
 _Avoid_: Private link, secret link
 
 **Access key**:
 The secret half of a Share link: the throwaway private key the link's key is wrapped to, written `fak1_…`. Each link has its own. Skills show it once, apart from the link, and never store it. Whoever holds the link and its Access key can read that upload.
 _Avoid_: Password, share key, decryption key
+
+**Grant**:
+The secret (`fgr1_…`) the console issues when a session key is approved with the `encrypt` scope, pasted back with `filecoin-pin login --grant -`. It gives that session key permanent read access to every encrypted upload under the owner's group key, including later ones; revoking or expiring the key does not take it back. Distinct from the lowercase on-chain scope grant a plain login signs.
+_Avoid_: Encryption key, group key (the group key is what the Grant unlocks, not the Grant), permission token
 
 **Handoff**:
 The `handoff.md` that `session-share` saves for the next agent: YAML frontmatter (`version`, `createdAt`, `origin`) and five sections, Context, Decisions, Constraints, Artifacts and Open threads. A summary of a session, never its transcript. The transcript travels only as its own file next to it (`transcript.jsonl`), when the user asks for it and confirms.
