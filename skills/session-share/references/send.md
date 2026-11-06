@@ -210,15 +210,14 @@ If the append fails because the ledger isn't valid JSON or isn't an array (a cra
 
 If this request also needs a handoff-only upload for the share (the two-uploads case above), make it now from the save folder, before cleaning up: follow step 6's handoff-only procedure.
 
-Then delete the save folder: it holds the transcript in plain text when one was included. Set `d` to the `mktemp -d` parent of the path printed in step 2 — its `dirname`, never the system temp root itself — and run this guard (also the command for any other `mktemp -d` folder, passed as is, and whenever the user abandons the flow early):
+Then delete the save folder: it holds the transcript in plain text when one was included. Set `d` to the `mktemp -d` parent of the path printed in step 2 — its `dirname`, never the system temp root itself — and run this guard (also the command for any other `mktemp -d` folder, passed as is, and whenever the user abandons the flow early). It deletes only a folder `mktemp -d` made, named `tmp.*` directly in the temp root, and refuses anything else, including the temp root and its parents:
 
 ```bash
 d='<the temp folder to delete>'
 case "$d" in
-  *..*) echo "refusing to delete $d — path contains .." ;;
-  /tmp|/var/tmp|/private/tmp|*/T|*/T/) echo "refusing to delete $d — it is the temp root" ;;
-  /tmp/*|/private/var/folders/*|/var/folders/*) rm -rf "$d" && echo cleaned ;;
-  *) echo "refusing to delete $d — not a temp folder" ;;
+  *..*|*/tmp.*/*) echo "refusing to delete $d — not a mktemp -d folder itself" ;;
+  /tmp/tmp.?*|/var/folders/*/*/T/tmp.?*|/private/var/folders/*/*/T/tmp.?*|"${TMPDIR%/}"/tmp.?*) rm -rf "$d" && echo cleaned ;;
+  *) echo "refusing to delete $d — not a mktemp -d folder" ;;
 esac
 ```
 
