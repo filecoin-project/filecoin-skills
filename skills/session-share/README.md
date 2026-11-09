@@ -121,7 +121,7 @@ When you share a save, the agent asks whether the share includes the transcript,
 
 - **Shares can't be revoked.** Whoever holds the link and the key can read that upload: the handoff, the artifacts, and the transcript when it was included.
 - **Stored while paid, deletable.** Every save is a paid upload that stays on Filecoin while your account pays for it; removing a piece ends the storage and the payment.
-- **Saves are labeled on chain.** Uploads land in a data set carrying a public `source=session-share-skill` label (tied to your wallet); the handoff's content and names stay encrypted.
+- **Saves are on chain.** Each save is a public on-chain record tied to your wallet; the handoff's content and names stay encrypted.
 - **A size cap applies** per upload, set by the installed CLI rather than by this skill. The agent doesn't measure against it up front: if the upload refuses with a size error, it quotes the error and stops. A large transcript is the one thing likely to reach it.
 - **The secret scan is a pattern check.** A summary can still hold sensitive details from the work. Read the handoff before sharing it.
 - **A transcript can hold anything.** No scan finds every secret in it. Once shared, it can't be taken back.

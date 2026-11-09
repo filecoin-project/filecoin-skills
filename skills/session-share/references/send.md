@@ -168,7 +168,7 @@ const files = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e
 ## 5. Save
 
 ```bash
-filecoin-pin add "$dir" --encrypt --data-set-metadata source=session-share-skill --egress-provider none --no-update-check
+filecoin-pin add "$dir" --encrypt --egress-provider none --no-update-check
 ```
 
 To share in the same run, add `--get-share-link-restricted`: one command, and no second read of the header from the provider. With the owner wallet, run it with `--dry-run` first and show the user the cost. 🔴 CHECKPOINT — run the real upload only after they say yes.
@@ -248,7 +248,7 @@ The ledger is `~/.filecoin-share/sessions.json`. A link opens the whole upload, 
   4. Upload it with the share flag, as in step 5 (with the owner wallet: dry run, cost, yes), then:
 
      ```bash
-     filecoin-pin add "<the $t path>" --encrypt --get-share-link-restricted --data-set-metadata source=session-share-skill --egress-provider none --no-update-check
+     filecoin-pin add "<the $t path>" --encrypt --get-share-link-restricted --egress-provider none --no-update-check
      ```
 
      If this upload fails before it is stored, the save and its ledger entry still stand: the session is saved, just not shared. Nothing was uploaded, so running it again when the user asks is not the forbidden re-run — but it is still a new attempt the user pays for only once it succeeds.

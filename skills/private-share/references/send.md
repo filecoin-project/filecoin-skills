@@ -26,7 +26,7 @@ Before sharing a folder, list it (`find '<dir>' -maxdepth 2`, with the path quot
 New content:
 
 ```bash
-filecoin-pin add <path> --encrypt --get-share-link-restricted --data-set-metadata source=private-share-skill --egress-provider none --no-update-check
+filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider none --no-update-check
 ```
 
 With the owner wallet, run it with `--dry-run` first and show the user the cost. 🔴 CHECKPOINT — run the real upload only after they say yes (see `add` in `filecoin-pin-cli.md`). With the share flag, run the real upload in the foreground: its output holds the Access key.

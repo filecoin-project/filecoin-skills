@@ -83,7 +83,7 @@ Each upload is paid storage on Filecoin; making a link for an existing upload co
 
 - **Shares can't be revoked.** Whoever holds the link and the key can read the content for as long as it is stored.
 - **Stored while paid, deletable.** Encrypted content stays on Filecoin while your account pays for it; removing a piece ends the storage and reduce the payment. Every share of new content is a paid upload.
-- **Size is visible.** Names and folder structure are encrypted, but the total size is public, the encrypted bytes are fetchable by anyone with the CID (they open only with the key), and the upload is an on-chain record tied to your wallet, in a data set carrying a public `source=private-share-skill` label.
+- **Size is visible.** Names and folder structure are encrypted, but the total size is public, the encrypted bytes are fetchable by anyone with the CID (they open only with the key), and the upload is an on-chain record tied to your wallet.
 - **A size cap applies** per upload, set by the installed CLI rather than by this skill. The agent doesn't measure against it up front: if the upload refuses with a size error, it quotes the error and stops. A folder packs into one piece, so the whole tree counts against the cap.
 - **Mainnet by default.** Calibration only when you ask for it, for testing.
 - **Integrity, not identity.** A successful `get --share` proves the content is exactly what the link names. It does not prove who made it.
