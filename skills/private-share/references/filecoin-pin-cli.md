@@ -59,7 +59,7 @@ grep -q '^WALLET_ADDRESS=' "$f" && grep -q '^GROUP_KEY_GRANT=' "$f" && echo logi
 
 `login-ok` means the login can encrypt. Otherwise run the login:
 
-1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt` (add `--no-browser` on a headless machine). The CLI opens or prints a console link. Give it to the user on its own line. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
+1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt --no-browser --no-wait`: it prints a console link and exits `2` at once instead of waiting. Give the link to the user on its own line; the `login --grant -` step below resumes the same key after they approve. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
 2. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to copy the Grant and run this, in the session with a leading `!` or in their own terminal:
 
    ```bash
