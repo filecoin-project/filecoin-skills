@@ -145,7 +145,7 @@ Secret scan. It is a backstop, not a guarantee: a clean scan doesn't make a file
 node -e '
 const fs = require("fs"), path = require("path"), readline = require("readline"), dir = process.argv[1]
 const hash = /(\/tx\/|\b(?:tx|transaction|\w*hash|\w*root)\b["\x27\s:=\\]*)0x[0-9a-f]{64}(?![0-9a-f])/gi
-const secret = /fak1_[A-Za-z0-9_-]{16,}|fgr1_[A-Za-z0-9_-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY|(?<![0-9a-fA-F])(?:0x)?[0-9a-fA-F]{64}(?![0-9a-fA-F])|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36}|sk-[A-Za-z0-9_-]{20,}|xox[abprs]-|(?<![A-Z0-9_])[A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD)[A-Z0-9_]*=["\x27]?[A-Za-z0-9_\-\/+.]{6,}/g
+const secret = /fak1_[A-Za-z0-9_-]{16,}|fgr1_[A-Za-z0-9_-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY|(?<![0-9a-fA-F])(?:0x)?[0-9a-fA-F]{64}(?![0-9a-fA-F])|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{36}|sk-[A-Za-z0-9_-]{20,}|xox[abprs]-|(?<![A-Z0-9_])[A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD)[A-Z0-9_]*=(?:\\?["\x27])?[A-Za-z0-9_\-\/+.]{6,}/g
 const files = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? files(path.join(d, e.name)) : [path.join(d, e.name)])
 ;(async () => {
   for (const f of files(dir)) {
