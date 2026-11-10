@@ -2,7 +2,7 @@
 
 Two ways in:
 
-- From a share: the user has a Share link (`https://…#v1/<cid>&d=…`) and an Access key (`fak1_…`). Needs no wallet, login or Grant — if this machine has a saved login, the CLI may mention it in its output; that is harmless. Steps 1, 2, 4.
+- From a share: the user has a Share link (`https://…#v1/<cid>&d=…`) and an Access key (`fak1_…`), or an open link that carries the key (`…&k=fak1_…`). Needs no wallet, login or Grant — if this machine has a saved login, the CLI may mention it in its output; that is harmless. Steps 1, 2, 4.
 - Your own session: the user wants back a session they saved on this machine ("restore my last session"). Needs the owner wallet or a session key with the Grant. Steps 1, 3, 4.
 
 Commands and errors are in `filecoin-pin-cli.md` next to this file.

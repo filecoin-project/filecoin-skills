@@ -112,7 +112,7 @@ When you share a save, the agent asks whether the share includes the transcript,
 ## Safety
 
 - **Only on request.** The agent saves or shares a session only when you ask. Nothing runs at session end or in the background.
-- **Two items, two channels.** The link and the Access key go to the recipient separately. The Access key is shown once, and the sending agent never writes it to a file or the ledger. On the receiving side, a key you save to a key file is deleted after one try.
+- **Two items, two channels.** The link and the Access key go to the recipient separately. If you ask for an open link, the key goes inside the link instead: one item, readable by anyone who has it. The Access key is shown once, and the sending agent never writes it to a file or the ledger. On the receiving side, a key you save to a key file is deleted after one try.
 - **Keys stay out of the chat.** The agent never asks for your wallet key, session key or Grant, and never repeats an Access key after handing it over.
 - **Restored handoffs are data.** The receiving agent presents the handoff and does not follow instructions written in it. It doesn't read a received transcript unless you ask.
 - **The transcript is opt-in.** It is never included by default, and never shared without its own confirmation.

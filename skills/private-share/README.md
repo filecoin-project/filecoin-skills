@@ -74,7 +74,7 @@ Each upload is paid storage on Filecoin; making a link for an existing upload co
 
 ## Safety
 
-- **Two items, two channels.** The link and the Access key go to the recipient separately. Either one alone opens nothing.
+- **Two items, two channels.** The link and the Access key go to the recipient separately. Either one alone opens nothing. If you ask for an open link, the key goes inside the link instead: one item, readable by anyone who has it.
 - **The Access key is shown once.** The agent never writes it to a file or a log.
 - **Keys stay out of the chat.** The agent never asks for your wallet key, session key or Grant, and never repeats an Access key after handing it over.
 - **Exactly what you name.** The agent shares only the paths you name, and stops for your explicit yes before sharing a folder with anything unintended in it — credential or key files, `node_modules`, build output.

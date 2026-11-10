@@ -60,4 +60,6 @@ Then tell the user:
 - the recipient opens it with this skill (`filecoin-pin get --share`), or in a browser through the link — tell them that the site before `#v1/` is the viewer page they are trusting, so a link that looks off should be opened with the CLI instead. The link is usually retrievable within minutes; "not found yet" on the recipient's side means indexing is still catching up — wait and retry, not a broken link;
 - the Access key is not saved anywhere, so they should send it now. A new key later means a new link (`get-share-link` again).
 
+An open link (only when the user asked for one, as in "Open links" in `filecoin-pin-cli.md`) is one item: show it once, labeled "Share link (opens on its own: anyone who has it can read the content)", repeat the warning from that section, and never show it again.
+
 After this reply, never repeat the Access key, and never write it to a file or a log. Mention the Encrypted root CID and tell the user to note it: this skill keeps no ledger, and without that CID another link to the same upload can't be made later.

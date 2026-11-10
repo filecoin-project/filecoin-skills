@@ -82,7 +82,7 @@ filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider 
 
 - `--encrypt` packs the file or folder, encrypts it, and uploads the envelope (the encrypted container holding the packed content) as a file named `encrypted.fee`. Names, file sizes and folder structure stay inside the ciphertext. Public: the total size, the ciphertext itself (anyone can fetch it by its CID; it opens only with the key), and the on-chain record that this wallet stored this piece at this time.
 - `--get-share-link-restricted` makes a restricted Share link right after the upload is stored: the link plus a separate Access key. The CLI checks the flag before uploading. If the share fails after a successful upload, `add` only warns: run `get-share-link <CID> --restricted` to retry. The CLI's own warning omits `--restricted` (fixed in filecoin-project/filecoin-pin#813, unreleased); add it, don't copy the hint as printed, or the retry makes an open link.
-- Never use plain `--get-share-link`. It prints an open link that carries its own key, so anyone who sees the link can read the content.
+- Plain `--get-share-link` makes an open link that carries its own key: anyone who sees the link can read the content. Use it only when the user explicitly asks for one; see "Open links" below.
 - Leave out the share flag to store without sharing.
 - Never pass `--no-ipfs`. A Share link fetches the upload by its IPFS root CID, so a `--no-ipfs` upload can't be shared.
 - `--egress-provider none` is already the CLI's default; the flag stays explicit so a stray `EGRESS_PROVIDER` in the environment can never flip it.
@@ -100,13 +100,25 @@ filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider 
 filecoin-pin get-share-link <encrypted-root-cid> --restricted --no-update-check
 ```
 
-Always pass `--restricted`: without it the link carries its own key. Works with the owner wallet or a session key with a Grant. It reads the upload's header back from a storage provider (at most about 1 MiB) and writes nothing locally. Every run makes a new link with its own Access key.
+Pass `--restricted` unless the user explicitly asked for an open link (see "Open links" below): without it the link carries its own key. Works with the owner wallet or a session key with a Grant. It reads the upload's header back from a storage provider (at most about 1 MiB) and writes nothing locally. Every run makes a new link with its own Access key.
 
 ## Share link output
 
 With `--restricted`, `add` and `get-share-link` print the Share link and the Access key as two labeled values, with a reminder to send them by different channels. The link starts with the viewer URL — a browser page that decrypts in the visitor's browser; everything after `#v1/` travels in the URL fragment, which a browser never sends to the server. The Access key starts with `fak1_`.
 
 The CLI never loads the viewer site. If a recipient opens the link in a browser instead of with this skill, the site before `#v1/` is what they are trusting: a tampered link can point at a lookalike page that asks for the Access key. A recipient in doubt should open the share with the CLI.
+
+### Open links (only when the user asks)
+
+An open link carries the Access key inside it (`&k=fak1_…`), so the link alone opens the upload: one item instead of two. Make one only when the user explicitly asks for it ("a link anyone can open", "put the key in the link", "no separate key"). Never offer it, and never switch to it because handing over two items is inconvenient.
+
+🔴 CHECKPOINT — before making it, tell the user once, and wait for a yes:
+
+- anyone who gets the link can read the content: a forwarded message, a chat log, a link preview, browser history. The share can't be revoked;
+- this conversation's history will hold a link that opens the upload;
+- the viewer removes the key from the address bar when the link is opened, but every copy of the link sent before that still holds it.
+
+Then run the same command without `--restricted` (`get-share-link <cid>`), or with `--get-share-link` instead of `--get-share-link-restricted` on `add`. The CLI prints only the Share link. Hand it over as one labeled item, with the warning above, and never repeat it later.
 
 ## get — restore your own upload
 
@@ -123,6 +135,8 @@ No CID argument: the link names the upload. No credentials — a saved login on 
 ### The Access key
 
 The Access key is a secret: whoever holds it and the link can read the share. Keep it out of the chat and out of every command you write; the only exception is case 3, when the user already pasted it. Never ask the user to paste it, and never pass it with `--access-key` (a flag shows up in `ps` and shell history). Use the first case that applies:
+
+0. **The link carries the key.** A link that contains `&k=fak1_` is an open link: run `filecoin-pin get --share '<link>' <output-dir> --no-update-check` with no Access key. If the user pasted it into the chat, it is already in this conversation's history: tell them once that anyone who can read it can open the share.
 
 1. **Already in the environment.** The user set it before starting the agent (`read -rs SHARE_ACCESS_KEY && export SHARE_ACCESS_KEY`). Check without printing it, then run the plain command; the CLI reads the variable:
 

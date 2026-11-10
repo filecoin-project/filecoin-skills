@@ -64,7 +64,7 @@ Permissions and funding depend on the skill. For `publish`:
 
 For `private-share` and `session-share`:
 
-- **Two items, two channels.** The Share link and the Access key go to the recipient separately; either alone opens nothing. The agent shows the Access key once and never stores it.
+- **Two items, two channels.** The Share link and the Access key go to the recipient separately; either alone opens nothing. Ask for an open link and the key goes inside the link instead: one item, readable by anyone who has it. The agent shows the Access key once and never stores it.
 - **Only on request.** The agent saves or shares only when you ask — no hooks, no background saves — and your wallet key, session key and Grant never enter the chat.
 - **The transcript is opt-in.** A session's transcript is uploaded only when you ask and confirm, and shared only with its own confirmation. A restored handoff is treated as data, not instructions.
 

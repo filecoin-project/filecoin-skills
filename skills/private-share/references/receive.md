@@ -1,6 +1,6 @@
 # Open a share you received
 
-A share is two items: a Share link (`https://…#v1/<cid>&d=…`) and an Access key (`fak1_…`). Neither opens anything alone. Opening a share needs no wallet, login or Grant — if this machine happens to have a saved login, the CLI may mention it in its output; that is harmless.
+A share is usually two items: a Share link (`https://…#v1/<cid>&d=…`) and an Access key (`fak1_…`). Neither opens anything alone. An open link carries the key itself (`…&k=fak1_…`) and opens on its own. Opening a share needs no wallet, login or Grant — if this machine happens to have a saved login, the CLI may mention it in its output; that is harmless.
 
 Commands and errors are in `filecoin-pin-cli.md` next to this file.
 

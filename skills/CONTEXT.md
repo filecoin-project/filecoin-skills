@@ -29,7 +29,7 @@ One encrypted upload plus the Share link and Access key that open it; what `priv
 _Avoid_: Private share, encrypted link (names only the link, not the upload)
 
 **Share link**:
-A link that opens one encrypted upload for someone with no wallet or Grant, made by `filecoin-pin get-share-link --restricted` or `add --encrypt --get-share-link-restricted`. It names the Encrypted root CID and carries the upload's key, wrapped to a throwaway key pair, all in the URL fragment (`#v1/…`). The unrestricted forms (no `--restricted`) make a link that also carries that key pair's private key and opens on its own; these skills never make one. A restricted link leaves it out: the recipient also needs the Access key, sent separately.
+A link that opens one encrypted upload for someone with no wallet or Grant, made by `filecoin-pin get-share-link --restricted` or `add --encrypt --get-share-link-restricted`. It names the Encrypted root CID and carries the upload's key, wrapped to a throwaway key pair, all in the URL fragment (`#v1/…`). The unrestricted forms (no `--restricted`) make an open link that also carries that key pair's private key and opens on its own; these skills make one only when the user explicitly asks for it. A restricted link leaves it out: the recipient also needs the Access key, sent separately.
 _Avoid_: Private link, secret link
 
 **Access key**:

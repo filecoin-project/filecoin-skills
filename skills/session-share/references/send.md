@@ -259,7 +259,7 @@ Then reply as in step 7.
 
 ## 7. Reply
 
-Start the reply with this block, in this order. Leave out the link and the key when nothing was shared. Use "Session shared" when this run only shared an earlier save.
+Start the reply with this block, in this order. Leave out the link and the key when nothing was shared. For an open link (only when the user asked for one, as in "Open links" in `filecoin-pin-cli.md`), leave out the Access key block, label the link "Share link (opens on its own: anyone who has it can read the content)", and repeat that section's warning. Use "Session shared" when this run only shared an earlier save.
 
 ```
 <Session saved | Session shared> · <confirmed on chain | stored, not yet confirmed on chain> · <mainnet | calibration>
