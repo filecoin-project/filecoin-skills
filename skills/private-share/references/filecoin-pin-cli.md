@@ -13,7 +13,7 @@ filecoin-pin get --help | grep -q -- '--share' && echo sharing-ok
 
 No `sharing-ok` (the second line prints nothing): the installed filecoin-pin predates share links. Run `npm install -g filecoin-pin@latest` and check again. If `npm install -g` fails with a permission error (`EACCES`), install to a user prefix instead: `npm install -g --prefix "$HOME/.local" filecoin-pin@latest`, then use `$HOME/.local/bin/filecoin-pin`. Still no `sharing-ok`: stop and tell the user the installed CLI has no share links and filecoin-pin 2.3.0 or later is needed.
 
-Exit codes for every command: `0` success, `1` error, `2` incomplete (a wait timed out, a login is not finished, or a confirmation was declined).
+Exit codes for every command: `0` success, `1` error, `2` incomplete. Exit `2` says nothing about whether an upload was stored: check the output for a `Piece CID` line.
 
 ## Network
 
