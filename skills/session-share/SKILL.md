@@ -1,6 +1,6 @@
 ---
 name: session-share
-description: Use when the user wants to save, share or restore an agent session, or says "save this session", "pin this session", "encrypt this session", "hand off this session", "save the handoff", "snapshot this session", "share this session with <name>", "share my last session", "restore this session", "restore my last session", "continue from this session link", or hands over a Filecoin Share link and Access key for a session handoff. Writes a handoff that summarizes the session (context, decisions, constraints, artifacts, open threads), adds the full transcript only when the user asks and confirms, encrypts it with the filecoin-pin CLI on Filecoin (mainnet by default), and restores it in another agent.
+description: Use when the user wants to save, share or restore an agent session, or says "save this session", "pin this session", "encrypt this session", "hand off this session", "save the handoff", "snapshot this session", "share this session with <name>", "share my last session", "restore this session", "restore my last session", "continue from this session link", or hands over a Filecoin Share link and Access key for a session handoff. Writes a handoff that summarizes the session (context, decisions, constraints, artifacts, dead ends, open threads), adds the full transcript only when the user asks and confirms, encrypts it with the filecoin-pin CLI on Filecoin (mainnet by default), and restores it in another agent.
 ---
 
 # session-share

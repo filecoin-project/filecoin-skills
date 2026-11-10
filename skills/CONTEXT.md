@@ -41,5 +41,5 @@ The secret (`fgr1_…`) the console issues when a session key is approved with t
 _Avoid_: Encryption key, group key (the group key is what the Grant unlocks, not the Grant), permission token
 
 **Handoff**:
-The `handoff.md` that `session-share` saves for the next agent: YAML frontmatter (`version`, `createdAt`, `origin`) and five sections, Context, Decisions, Constraints, Artifacts and Open threads. A summary of a session, never its transcript. The transcript travels only as its own file next to it (`transcript.jsonl`), when the user asks for it and confirms.
+The `handoff.md` that `session-share` saves for the next agent: YAML frontmatter (`version`, `createdAt`, `origin`) and six sections, Context, Decisions, Constraints, Artifacts, Dead ends and Open threads. A summary of a session, never its transcript. The transcript travels only as its own file next to it (`transcript.jsonl`), when the user asks for it and confirms.
 _Avoid_: Snapshot, session dump, transcript, memory file

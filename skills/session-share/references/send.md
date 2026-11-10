@@ -11,7 +11,8 @@ Which flow:
 Every save holds the handoff. When the user asks to save the session ("save this session", "pin", "encrypt"), ask once, before step 3, whether to also include:
 
 - artifacts: list the local files you will reference under `## Artifacts`, by path, so they can pick any to bundle;
-- the transcript: the full session, which needs the warning and a yes in step 3.
+- the transcript: the full session, which needs the warning and a yes in step 3;
+- optionally, what the next agent should do. Their answer becomes the handoff's Goal and its first "Next" step.
 
 Don't ask when the user asked for the handoff only ("save the handoff"), or already said what to include ("include the report", "include the transcript", "without the transcript"). When saving and sharing in one request, ask this together with the share question below, in one message.
 
@@ -60,7 +61,7 @@ origin: { tool: claude-code, toolVersion: 2.1.3 }
 ## Context
 
 - What: the project or repo, and the task, in one line.
-- Goal: the outcome the user wants.
+- Goal: the outcome the user wants, in their words when they gave one.
 - Where it stands: one line. Details go under Open threads.
 
 ## Decisions
@@ -69,25 +70,32 @@ origin: { tool: claude-code, toolVersion: 2.1.3 }
 
 ## Constraints
 
-- Rules the next agent must follow: the user's requirements, limits and preferences. Not project decisions: those go under Decisions.
+- Rules the next agent must follow: the user's requirements, limits, preferences and corrections. Not project decisions: those go under Decisions.
 
 ## Artifacts
 
-- `src/report.ts` (path on the sender's machine): what it is.
-- https://example.com/spec: what it is.
+- `src/report.ts` (path on the sender's machine): what it is, and why it matters for the next step.
+- https://example.com/spec: what it is, and why it matters.
 - `artifacts/report.pdf`: bundled, what it is.
 - `transcript.jsonl`: the full session transcript, included at the user's request (only when it is).
 
+## Dead ends
+
+- What was tried and didn't work, with the exact error or reason, so the next agent doesn't repeat it. `None.` if nothing failed.
+
 ## Open threads
 
-- Unfinished work as of now, the next step, open questions. Only items that are still open; finished work goes under Decisions, or nowhere.
+- Next: the one concrete step to take first.
+- Then: other unfinished work and open questions, as of now. Only items that are still open; finished work goes under Decisions, or nowhere.
 ```
 
 Context is at most three bullets, about 60 words: no history of what happened, no command output, and nothing that belongs under the other headings.
 
-Write `None.` under a heading that has nothing. Write a summary, not the transcript. Name files and links; don't paste their contents.
+Write `None.` under a heading that has nothing. Write a summary, not the transcript. Name files and links; don't paste their contents. Copy IDs, CIDs, commands and error messages exactly, never paraphrased: the next agent may need them verbatim.
 
 Then reread it once: every open thread is still open, every state you mention matches the checks above, and each bullet sits under the right heading.
+
+Show the handoff to the user and offer one round of edits before going on: it is what the next agent will act on. Apply what they change, then continue. This is a quick review, not a gate: no answer means go on.
 
 If the user stops the flow at any point after this — no save, changed their mind — delete the folder with the guarded cleanup command in step 5 before ending the turn: it can already hold a transcript copy.
 
@@ -129,15 +137,15 @@ No yes: delete the copy (`rm -f "$dir/transcript.jsonl"`) and save without it. O
 
 ## 4. Check before saving
 
-Format check. All six lines must print, each starting `ok`; the missing one names the failure:
+Format check. All seven lines must print, each starting `ok`; the missing one names the failure:
 
 ```bash
 f="$dir/handoff.md"
 head -1 "$f" | grep -qx -- '---' && grep -qx 'version: 1' "$f" && grep -qE '^createdAt: [0-9]{4}-' "$f" && grep -qE '^origin: \{ ?tool: [a-z]' "$f" && echo 'ok frontmatter'
-for h in 'Context' 'Decisions' 'Constraints' 'Artifacts' 'Open threads'; do grep -qx "## $h" "$f" && echo "ok $h"; done
+for h in 'Context' 'Decisions' 'Constraints' 'Artifacts' 'Dead ends' 'Open threads'; do grep -qx "## $h" "$f" && echo "ok $h"; done
 ```
 
-Fewer than six lines: fix `handoff.md` and run the check again (`ok frontmatter` checks the frontmatter in order: opening `---`, `version`, `createdAt`, `origin`). The file must use LF line endings and no byte-order mark; a CRLF file fails every line.
+Fewer than seven lines: fix `handoff.md` and run the check again (`ok frontmatter` checks the frontmatter in order: opening `---`, `version`, `createdAt`, `origin`). The file must use LF line endings and no byte-order mark; a CRLF file fails every line.
 
 Secret scan. It is a backstop, not a guarantee: a clean scan doesn't make a file safe to share, it only catches known shapes. It prints the number of matches and the file name, never the matching text, and streams line by line, so a large transcript doesn't exhaust memory. It scans regular files only; anything else (a symlink, a pipe) prints `UNREADABLE`. CIDs are never flagged. A transaction hash has the same shape as a private key (64 hex characters), so it is skipped only where the text marks it as one — a `/tx/` link, or a label such as `tx`, `transaction`, or one ending in `hash` or `root` (`blockHash`, `stateRoot`) — and the value carries its `0x` prefix. A bare 64-character hex value is still flagged. Access keys and Grants count only with a real key after the prefix, so placeholders like `fak1_…` in this skill's own text don't. Assignments whose variable name contains `KEY`, `SECRET`, `TOKEN` or `PASSWORD` (`API_KEY=`, `MY_TOKEN=`, …) with a value of six or more characters are flagged anywhere in a line, also inside JSON lines of a transcript.
 

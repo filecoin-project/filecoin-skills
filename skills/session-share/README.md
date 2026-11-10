@@ -1,6 +1,6 @@
 # session-share
 
-Save an agent session to Filecoin, share it, and restore it in another agent. The agent writes a short handoff for the next agent (context, decisions, constraints, artifacts, open threads), encrypts it with the [filecoin-pin](https://github.com/filecoin-project/filecoin-pin) CLI, and stores it on Filecoin (mainnet by default). Another agent restores it from a Share link and an Access key, and `get` checks that the handoff was not altered.
+Save an agent session to Filecoin, share it, and restore it in another agent. The agent writes a short handoff for the next agent (context, decisions, constraints, artifacts, dead ends, open threads), encrypts it with the [filecoin-pin](https://github.com/filecoin-project/filecoin-pin) CLI, and stores it on Filecoin (mainnet by default). Another agent restores it from a Share link and an Access key, and `get` checks that the handoff was not altered.
 
 > **Status: preview.**
 
@@ -81,7 +81,7 @@ session-20261102T103523Z/
 └── artifacts/          # only files you name
 ```
 
-`handoff.md` is one Markdown file with YAML frontmatter and five required sections:
+`handoff.md` is one Markdown file with YAML frontmatter and six required sections:
 
 ```markdown
 ---
@@ -94,6 +94,7 @@ origin: { tool: claude-code, toolVersion: 2.1.3 }
 ## Decisions
 ## Constraints
 ## Artifacts
+## Dead ends
 ## Open threads
 ```
 
