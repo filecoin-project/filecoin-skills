@@ -81,7 +81,7 @@ filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider 
 ```
 
 - `--encrypt` packs the file or folder, encrypts it, and uploads the envelope (the encrypted container holding the packed content) as a file named `encrypted.fee`. Names, file sizes and folder structure stay inside the ciphertext. Public: the total size, the ciphertext itself (anyone can fetch it by its CID; it opens only with the key), and the on-chain record that this wallet stored this piece at this time.
-- `--get-share-link-restricted` makes a restricted Share link right after the upload is stored: the link plus a separate Access key. The CLI checks the flag before uploading. If the share fails after a successful upload, `add` only warns: run `get-share-link <CID> --restricted` to retry.
+- `--get-share-link-restricted` makes a restricted Share link right after the upload is stored: the link plus a separate Access key. The CLI checks the flag before uploading. If the share fails after a successful upload, `add` only warns: run `get-share-link <CID> --restricted` to retry. The CLI's own warning omits `--restricted` (fixed in filecoin-project/filecoin-pin#813, unreleased); add it, don't copy the hint as printed, or the retry makes an open link.
 - Never use plain `--get-share-link`. It prints an open link that carries its own key, so anyone who sees the link can read the content.
 - Leave out the share flag to store without sharing.
 - Never pass `--no-ipfs`. A Share link fetches the upload by its IPFS root CID, so a `--no-ipfs` upload can't be shared.
