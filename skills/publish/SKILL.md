@@ -1,6 +1,6 @@
 ---
 name: publish
-description: Use when the user wants a shareable or durable browser link for something an agent made, or says "publish this", "publish this file", "publish this folder", "publish this report", "share this file", "share these files", "share this folder", "share as a bundle", "one link for all of these", "pin this", "send someone this file", "make this public", "get me a public link", "ipfs link". Any single file, or a directory shared as one bundle link — the size cap comes from the installed CLI's synapse SDK, checked at share time. Asked to show or list existing shares, read the local ledger at ~/.filecoin-share/shares.json; this skill only creates and repairs shares.
+description: Use when the user wants a shareable or durable browser link for something an agent made, or says "publish this", "publish this file", "publish this folder", "publish this report", "share this file", "share these files", "share this folder", "share as a bundle", "one link for all of these", "pin this", "send someone this file", "make this public", "get me a public link", "ipfs link". Any single file, or a directory shared as one bundle link — the size cap comes from the installed CLI's synapse SDK, checked at share time. Asked to show or list existing shares, read the local ledger at ~/.filecoin-share/shares.json; this skill only creates and repairs shares. For private or encrypted sharing, or a link that needs an access key, use private-share instead.
 ---
 
 # publish
