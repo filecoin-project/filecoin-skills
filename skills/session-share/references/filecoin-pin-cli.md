@@ -13,7 +13,7 @@ filecoin-pin get --help | grep -q -- '--share' && echo sharing-ok
 
 No `sharing-ok` (the second line prints nothing): the installed filecoin-pin predates share links. Run `npm install -g filecoin-pin@latest` and check again. If `npm install -g` fails with a permission error (`EACCES`), install to a user prefix instead: `npm install -g --prefix "$HOME/.local" filecoin-pin@latest`, then use `$HOME/.local/bin/filecoin-pin`. Still no `sharing-ok`: stop and tell the user the installed CLI has no share links and filecoin-pin 2.3.0 or later is needed.
 
-Exit codes for every command: `0` success, `1` error, `2` incomplete (a wait timed out, a login is not finished, or a confirmation was declined).
+Exit codes for every command: `0` success, `1` error, `2` incomplete. Exit `2` says nothing about whether an upload was stored: check the output for a `Piece CID` line.
 
 ## Network
 
@@ -59,7 +59,7 @@ grep -q '^WALLET_ADDRESS=' "$f" && grep -q '^GROUP_KEY_GRANT=' "$f" && echo logi
 
 `login-ok` means the login can encrypt. Otherwise run the login:
 
-1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt` (add `--no-browser` on a headless machine). The CLI opens or prints a console link. Give it to the user on its own line. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
+1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt --no-wait` (add `--no-browser` on a headless machine): it opens or prints a console link and exits `2` at once instead of waiting. Give the link to the user on its own line; the `login --grant -` step below resumes the same key after they approve. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
 2. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to copy the Grant and run this, in the session with a leading `!` or in their own terminal:
 
    ```bash
@@ -81,13 +81,13 @@ filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider 
 ```
 
 - `--encrypt` packs the file or folder, encrypts it, and uploads the envelope (the encrypted container holding the packed content) as a file named `encrypted.fee`. Names, file sizes and folder structure stay inside the ciphertext. Public: the total size, the ciphertext itself (anyone can fetch it by its CID; it opens only with the key), and the on-chain record that this wallet stored this piece at this time.
-- `--get-share-link-restricted` makes a restricted Share link right after the upload is stored: the link plus a separate Access key. The CLI checks the flag before uploading. If the share fails after a successful upload, `add` only warns: run `get-share-link <CID> --restricted` to retry.
+- `--get-share-link-restricted` makes a restricted Share link right after the upload is stored: the link plus a separate Access key. The CLI checks the flag before uploading. If the share fails after a successful upload, `add` only warns: run `get-share-link <CID> --restricted` to retry. The CLI's own warning omits `--restricted` (fixed in filecoin-project/filecoin-pin#813, unreleased); add it, don't copy the hint as printed, or the retry makes an open link.
 - Never use plain `--get-share-link`. It prints an open link that carries its own key, so anyone who sees the link can read the content.
 - Leave out the share flag to store without sharing.
 - Never pass `--no-ipfs`. A Share link fetches the upload by its IPFS root CID, so a `--no-ipfs` upload can't be shared.
 - `--egress-provider none` is already the CLI's default; the flag stays explicit so a stray `EGRESS_PROVIDER` in the environment can never flip it.
 - The root CID in the summary is the Encrypted root CID. The packing step prints the same value earlier.
-- Owner wallet mode doesn't check that the account can pay. 🔴 CHECKPOINT — run the same command with `--dry-run` first: it prints the cost and uploads nothing. Show the cost to the user, and run the real upload only after they say yes.
+- Owner wallet mode checks that the account can pay only after packing, so a cost preview needs a dry run. 🔴 CHECKPOINT — run the same command with `--dry-run` first: it prints the cost and uploads nothing. Show the cost to the user, and run the real upload only after they say yes.
 - Session key mode also checks funding before packing. When the account can't pay, it stops with a pre-filled console funding link. This is the funding stop, and it has a recognizable shape: session-key mode, exit 1, a console funding link in the output, and no `Piece CID` line — nothing was packed or uploaded. Hand the link to the user, wait for them to fund, and run the same command again. This is the only case where you run `add` again yourself. Any other exit 1 is not the funding stop; owner wallet mode has no funding stop at all.
 - An upload takes one to a few minutes. Let it finish: a slow upload is not a failed one. Never stop it to start again.
   - With a share flag, run it in the foreground with a long timeout (10 minutes). Its output holds the Access key, and a background run saves the whole output to a file.
@@ -158,7 +158,7 @@ The CLI opens the payload with the key before downloading, so a wrong key fails 
 
 ## Troubleshooting
 
-**Upload stored but not confirmed.** `add` exits `2`, or reports that the commit on a provider timed out, after the upload reached the provider. The transaction was submitted and may still confirm. Don't upload again:
+**Upload stored but not confirmed.** `add` failed, or reported that the commit on a provider timed out, after printing a `Piece CID` line: the upload reached the provider. The exit code doesn't tell you this (a commit failure exits `1`; exit `2` only means the run was interrupted), the `Piece CID` line does. The transaction may have been submitted and may still confirm. Don't upload again:
 
 1. Keep the Encrypted root CID, the data set ID and the Piece CID from the output.
 2. If the user asked to share, run `get-share-link <encrypted-root-cid> --restricted` once. It uploads nothing, and the link stays the same once the upload is confirmed.

@@ -59,7 +59,7 @@ grep -q '^WALLET_ADDRESS=' "$f" && grep -q '^GROUP_KEY_GRANT=' "$f" && echo logi
 
 `login-ok` means the login can encrypt. Otherwise run the login:
 
-1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt --no-browser --no-wait`: it prints a console link and exits `2` at once instead of waiting. Give the link to the user on its own line; the `login --grant -` step below resumes the same key after they approve. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
+1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt --no-wait` (add `--no-browser` on a headless machine): it opens or prints a console link and exits `2` at once instead of waiting. Give the link to the user on its own line; the `login --grant -` step below resumes the same key after they approve. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
 2. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to copy the Grant and run this, in the session with a leading `!` or in their own terminal:
 
    ```bash
@@ -158,7 +158,7 @@ The CLI opens the payload with the key before downloading, so a wrong key fails 
 
 ## Troubleshooting
 
-**Upload stored but not confirmed.** `add` exits `2`, or reports that the commit on a provider timed out, after the upload reached the provider. The transaction was submitted and may still confirm. Don't upload again:
+**Upload stored but not confirmed.** `add` failed, or reported that the commit on a provider timed out, after printing a `Piece CID` line: the upload reached the provider. The exit code doesn't tell you this (a commit failure exits `1`; exit `2` only means the run was interrupted), the `Piece CID` line does. The transaction may have been submitted and may still confirm. Don't upload again:
 
 1. Keep the Encrypted root CID, the data set ID and the Piece CID from the output.
 2. If the user asked to share, run `get-share-link <encrypted-root-cid> --restricted` once. It uploads nothing, and the link stays the same once the upload is confirmed.
