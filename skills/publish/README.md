@@ -107,7 +107,7 @@ mv ~/.filecoin-share <dest> && ln -s <dest> ~/.filecoin-share
 
 Agent makes an artifact → skill runs `filecoin-pin add` → stored on Filecoin Warm Storage as **two copies on two distinct providers** → root CID returned → opens at any IPFS gateway.
 
-Data sets are tagged `source=filecoin-share` — an opaque constant that never changes — and reused, so creation and lockup costs are paid on your first publish, not every time.
+Data sets are reused: filecoin-pin picks your existing data sets, so creation and lockup costs are paid on your first publish, not every time.
 
 ## Safety
 
