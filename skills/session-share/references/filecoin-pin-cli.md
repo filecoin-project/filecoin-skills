@@ -1,8 +1,10 @@
 # filecoin-pin CLI reference for encrypted sharing
 
-The commands this skill runs, condensed. Verified against filecoin-pin v2.3.0, the first release with share links. When this file and `filecoin-pin <command> --help` disagree, the help output wins. This file ships identically in `private-share` and `session-share`: a fix here must land in both copies.
+<!-- This file ships identically in private-share and session-share: a fix here must land in both copies. -->
 
-The CLI prints each value this skill needs on a labeled line. Find values by their shape, not by exact wording: the link contains `#v1/`, the Access key starts with `fak1_`, the Piece CID starts with `bafkzcib`, and the IPFS root CID (the Encrypted root CID for an encrypted upload) starts with `bafyb` (directories and chunked files) or `bafkrei` (single files up to 1 MiB).
+The commands this skill runs, condensed. Verified against filecoin-pin v2.3.0, the first release with share links. When this file and `filecoin-pin <command> --help` disagree, the help output wins.
+
+Find the values you need by their shape, not by exact wording: they can appear on a labeled line or inside a warning. The link contains `#v1/`, the Access key starts with `fak1_`, the Piece CID starts with `bafkzcib`, and the IPFS root CID (the Encrypted root CID for an encrypted upload) starts with `bafyb` (directories and chunked files) or `bafkrei` (single files up to 1 MiB).
 
 ## Install and version check
 
@@ -13,11 +15,11 @@ filecoin-pin get --help | grep -q -- '--share' && echo sharing-ok
 
 No `sharing-ok` (the second line prints nothing): the installed filecoin-pin predates share links. Run `npm install -g filecoin-pin@latest` and check again. If `npm install -g` fails with a permission error (`EACCES`), install to a user prefix instead: `npm install -g --prefix "$HOME/.local" filecoin-pin@latest`, then use `$HOME/.local/bin/filecoin-pin`. Still no `sharing-ok`: stop and tell the user the installed CLI has no share links and filecoin-pin 2.3.0 or later is needed.
 
-Exit codes for every command: `0` success, `1` error, `2` incomplete. Exit `2` says nothing about whether an upload was stored: check the output for a `Piece CID` line.
+Exit codes for every command: `0` success, `1` error, `2` incomplete. For `add`, the exit code alone doesn't say whether anything was stored: see "Reading the `add` result".
 
 ## Network
 
-Mainnet by default. Use calibration only when the user asks for it, for testing. Then pass `--network calibration` to every command (`login`, `balance`, `add`, `get-share-link`, `get`), and tell the recipient to pass it too: the link doesn't name its network.
+Mainnet by default. Use calibration only when the user asks for it, for testing. Then pass `--network calibration` to every command (`login`, `balance`, `add`, `get-share-link`, `get`, `data-set`), and tell the recipient to pass it too: the link doesn't name its network.
 
 The saved login records its own `NETWORK`. Before the first upload in a session, run `filecoin-pin balance --no-update-check` (with `--network calibration` when testing) and check that the network it reports matches. A mismatch: stop and tell the user.
 
@@ -59,16 +61,17 @@ grep -q '^WALLET_ADDRESS=' "$f" && grep -q '^GROUP_KEY_GRANT=' "$f" && echo logi
 
 `login-ok` means the login can encrypt. Otherwise run the login:
 
-1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones — expiry and revoking the key do not take it back. Then run `filecoin-pin login --scopes createDataSet,addPieces,encrypt --no-wait` (add `--no-browser` on a headless machine): it opens or prints a console link and exits `2` at once instead of waiting. Give the link to the user on its own line; the `login --grant -` step below resumes the same key after they approve. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
-2. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to copy the Grant and run this, in the session with a leading `!` or in their own terminal:
+1. Before anything opens, tell the user once what they are about to approve: with `encrypt` in the scopes, the console issues a Grant that gives this session key permanent read access to every encrypted upload under the owner's group key, including later ones. Expiry and revoking the key don't take it back.
+2. Run `filecoin-pin login --scopes createDataSet,addPieces,encrypt --no-wait` (add `--no-browser` on a headless machine). It opens or prints a console link and exits `2` at once instead of waiting. Give the link to the user on its own line. 🔴 CHECKPOINT — the user connects the owner wallet in the console and approves; nothing proceeds until they do.
+3. The console then shows a Grant (`fgr1_…`). The Grant is a secret: the user must not paste it into the chat. Ask them to copy the Grant and run this, in the session with a leading `!` or in their own terminal:
 
    ```bash
    <paste> | filecoin-pin login --grant -
    ```
 
-   No clipboard (`none`): they run `filecoin-pin login --grant -` in their own terminal and paste the Grant at its prompt.
+   No clipboard (`none`): they run `filecoin-pin login --grant -` in their own terminal and paste the Grant at its prompt. This step resumes the same key from step 2.
 
-3. Run the `login-ok` check again.
+4. Run the `login-ok` check again.
 
 Owner wallet mode runs only when the user asks for it. They set `PRIVATE_KEY` in the environment themselves. Never ask for the key, never read a key file with a command that prints bytes, and never write one.
 
@@ -88,11 +91,11 @@ filecoin-pin add <path> --encrypt --get-share-link-restricted --egress-provider 
 - `--egress-provider none` is already the CLI's default; the flag stays explicit so a stray `EGRESS_PROVIDER` in the environment can never flip it.
 - The root CID in the summary is the Encrypted root CID. The packing step prints the same value earlier.
 - Owner wallet mode checks that the account can pay only after packing, so a cost preview needs a dry run. 🔴 CHECKPOINT — run the same command with `--dry-run` first: it prints the cost and uploads nothing. Show the cost to the user, and run the real upload only after they say yes.
-- Session key mode also checks funding before packing. When the account can't pay, it stops with a pre-filled console funding link. This is the funding stop, and it has a recognizable shape: session-key mode, exit 1, a console funding link in the output, and no `Piece CID` line — nothing was packed or uploaded. Hand the link to the user, wait for them to fund, and run the same command again. This is the only case where you run `add` again yourself. Any other exit 1 is not the funding stop; owner wallet mode has no funding stop at all.
+- Session key mode checks funding before packing. When the account can't pay, it stops with a pre-filled console funding link: the funding stop, in "Reading the `add` result".
 - An upload takes one to a few minutes. Let it finish: a slow upload is not a failed one. Never stop it to start again.
   - With a share flag, run it in the foreground with a long timeout (10 minutes). Its output holds the Access key, and a background run saves the whole output to a file.
   - Without a share flag, you can run it in the background and poll the output.
-- **Never run `add --encrypt` again to recover from a failed or stuck upload.** Every run encrypts with a new random salt, so it makes a different CID and a second full, paid upload. Follow "Upload stored but not confirmed" in Troubleshooting instead.
+- **Never run `add --encrypt` again to recover from a failed or stuck upload.** Every run encrypts with a new random salt, so it makes a different CID and a second full, paid upload. Follow "Reading the `add` result" instead.
 
 ## get-share-link — share an earlier upload
 
@@ -161,7 +164,7 @@ The Access key is a secret: whoever holds it and the link can read the share. Ke
 
    ```bash
    test -s '<path>' && echo key-file
-   SHARE_ACCESS_KEY="$(cat '<path>')" filecoin-pin get --share '<link>' <output-dir> --no-update-check; rm -f '<path>'; rmdir "$(dirname '<path>')" 2>/dev/null
+   SHARE_ACCESS_KEY="$(cat '<path>')" filecoin-pin get --share '<link>' <output-dir> --no-update-check; rc=$?; rm -f '<path>'; rmdir "$(dirname '<path>')" 2>/dev/null; echo "get exit $rc"
    ```
 
    This file is the one place the key touches disk: the user writes it into a folder only they can read, and it is gone after one try. To retry (a wrong key, or "not found yet"), ask the user to save the key again — or, for repeated retries, to set `SHARE_ACCESS_KEY` in their own shell as in case 1.
@@ -170,15 +173,25 @@ The Access key is a secret: whoever holds it and the link can read the share. Ke
 
 The CLI opens the payload with the key before downloading, so a wrong key fails fast. Then it downloads, checks every block against the CID, decrypts (the envelope rejects any change to the ciphertext), and prints the saved path.
 
-## Troubleshooting
+## Reading the `add` result
 
-**Upload stored but not confirmed.** `add` failed, or reported that the commit on a provider timed out, after printing a `Piece CID` line: the upload reached the provider. The exit code doesn't tell you this (a commit failure exits `1`; exit `2` only means the run was interrupted), the `Piece CID` line does. The transaction may have been submitted and may still confirm. Don't upload again:
+The exit code alone doesn't say whether anything was stored. Read the output and take the first row that matches:
 
-1. Keep the Encrypted root CID, the data set ID and the Piece CID from the output.
-2. If the user asked to share, run `get-share-link <encrypted-root-cid> --restricted` once. It uploads nothing, and the link stays the same once the upload is confirmed.
-   - It works: hand over the link and the Access key as usual, with this warning: the content is on the provider but not yet confirmed on chain. Until it is, it isn't proven or paid for, and the provider may remove it.
-   - It fails: say the link can be made once the piece is confirmed.
-3. Check the piece once:
+| The output shows | It means | Do |
+|---|---|---|
+| `Add completed successfully` and every requested copy | Stored and confirmed on chain | Nothing more |
+| `Got 1/2 copies`, whichever provider failed | Stored and confirmed on the copies it lists, with reduced redundancy | "Fewer copies" below |
+| A Piece CID (`bafkzcib…`) anywhere, or "data is stored but not on-chain", then a failure, with no `Got … copies` line (`Commit failed`, a timeout) | Stored on a provider. The commit may still land, even after "Commit failed" | "Stored, not yet confirmed" below |
+| A console funding link and no Piece CID, in session key mode | The funding stop: nothing was packed or uploaded | Give the user the link; once they have funded, run the same command once more. This is the only re-run you do yourself |
+| No Piece CID and no funding link (`Failed to create upload session`, a provider answering 503) | Nothing stored | "Nothing stored" below |
+| Exit `2`, an interrupted run, or no output at all | Not known yet | "Interrupted" below |
+
+The reply's status line follows the same table: the first two rows, or a `piece-status` showing the piece committed, are "confirmed on chain"; the third row until then is "stored, not yet confirmed on chain".
+
+**Stored, not yet confirmed.** Don't upload again:
+
+1. Keep the Encrypted root CID, the Piece CID, and the data set IDs. The failed provider's data set may not be printed on its own line: take the IDs from "Reusing existing data sets …" or "Data Set ID".
+2. Check the piece once on each data set:
 
    ```bash
    filecoin-pin data-set piece-status <data-set-id> <piece-cid>
@@ -188,13 +201,22 @@ The CLI opens the payload with the key before downloading, so a wrong key fails 
 
    - `active` or `onchain orphaned`: committed on chain. `onchain orphaned` only means the provider's own list hasn't caught up.
    - `offchain orphaned` (the provider holds it, the chain doesn't), or not listed: not committed yet.
-4. Don't poll. Give the user the `piece-status` command to check later, with the CID and the data set ID. A share link already handed over needs nothing more. If the user still needs a link and step 2 failed, run `get-share-link` again once the piece is committed.
+3. If the user asked to share, run `get-share-link <encrypted-root-cid>` once, with the link type they chose: `--restricted`, or no flag for an open link they asked for and confirmed. It uploads nothing, and the link stays the same once the upload is confirmed.
+   - It works: hand over the link as usual. If step 2 didn't show the piece committed, add this warning: the content is on the provider but not yet confirmed on chain. Until it is, it isn't proven or paid for, and the provider may remove it.
+   - It fails: say the link can be made once the piece is confirmed.
+4. Don't poll. Report how many copies are committed, from step 2. If none is yet, give the user the `piece-status` command to check later, with the CID and the data set IDs. A link already handed over needs nothing more. If they still need a link and step 3 failed, run `get-share-link` again once the piece is committed.
 
-**Upload interrupted, or a stuck run you have no output for** (the user pressed Ctrl-C, the terminal died, or the run happened outside this conversation). First check whether it is still running: `pgrep -fl '[f]ilecoin-pin add' || echo not-running` (the brackets stop `pgrep` from matching its own shell). Still running: it is not failed — let it finish, never kill it. `not-running` and you have the run's output: follow what it shows — a summary with the CID and IDs means "Upload stored but not confirmed" above; output that ends before anything reached a provider means nothing was uploaded. `not-running` with no output to recover the CID and IDs from: there is nothing to resume — "resume" would be a new `add`, which is a new paid upload under a new CID. Stop and tell the user exactly that; run `add` again only when they, knowing it, ask.
+**Fewer copies.** The content is stored and the share works. Report it as reduced redundancy (for example 1/2 copies, naming the provider that holds it), not as a failure. Don't repair it by uploading again: `add --encrypt` makes a new CID, and a plain `add` would upload the content unencrypted; the envelope isn't kept after `add` exits. If the user wants two copies, the only way today is a new encrypted upload (a new CID and a new share), made only when they ask.
 
-**Only the second copy failed** (`Got 1/2 copies`). The content is stored on the first provider, and the share works. Report it as degraded redundancy (1/2 copies), not a failure. Don't repair it by uploading again: `add --encrypt` makes a new CID, and a plain `add` would upload the content unencrypted. The envelope isn't kept after `add` exits, so there is nothing to re-add as is. Tell the user the share works with one copy; if they want two, the only way today is a new encrypted upload (a new CID and a new share), made only when they ask.
+**Nothing stored.** Don't run `add` again. Tell the user the upload failed, with the error line, and that running it again is a new paid upload under a new CID. Run it again only when they ask.
 
-**Upload failed before it was stored** (for example `Failed to create upload session`, or a provider answering 503). Don't run `add` again. Tell the user the upload failed, with the error line, and that running it again uploads under a new CID. Run it again only when the user asks.
+**Interrupted.** Check whether it is still running: `pgrep -fl '[f]ilecoin-pin add' || echo not-running` (the brackets stop `pgrep` from matching its own shell).
+
+- Still running: it hasn't failed. Let it finish; never kill it.
+- `not-running`, and you have its output: read it with the table above.
+- `not-running`, with no output to recover the CID and IDs from: there is nothing to resume, because "resume" would be a new `add`, a new paid upload under a new CID. Tell the user exactly that, and run `add` again only when they, knowing it, ask.
+
+## Other errors
 
 `No credentials found.` No usable login. Run the login above.
 

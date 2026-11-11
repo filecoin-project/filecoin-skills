@@ -39,7 +39,7 @@ filecoin-pin get-share-link <encrypted-root-cid> --restricted --no-update-check
 
 If `add` stored the upload but warned that the share failed, run `get-share-link --restricted` with the Encrypted root CID from the summary. With calibration, add `--network calibration` to both commands.
 
-If `add` fails or exits `2`, never run it again to recover: follow Troubleshooting in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload.
+If `add` fails or is interrupted, never run it again to recover: read the result with "Reading the `add` result" in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload.
 
 ## 4. Hand over the link and the Access key
 

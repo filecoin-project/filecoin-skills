@@ -2,45 +2,52 @@
 
 Commands, credentials and errors are in `filecoin-pin-cli.md` next to this file.
 
-Which flow:
+## 0. Before you start
 
-- "save", "pin", "encrypt" this session: steps 1 to 5.
-- "share this session with …", "hand off this session to …", or "save this session and share it with …": steps 1 to 5, with `--get-share-link-restricted` in step 5 — but only after the share-content questions below are answered; a share that must not include the transcript while the save does goes through step 6's handoff-only upload instead. Then reply as in step 7. If the ledger already has a save of this session and nothing has changed since (check: `git status --short` clean in the project, and no work done in this conversation since that save), run step 6 with that CID instead.
-- "share my last session": step 1, then step 6, with the newest entry in the ledger (`~/.filecoin-share/sessions.json`) whose `project` is the current project, skipping entries with `derivedFrom` (handoff-only copies made for an earlier share). No entry for this project: show the newest entries and ask which one.
+Pick the flow from the request:
 
-Every save holds the handoff. When the user asks to save the session ("save this session", "pin", "encrypt"), ask once, before step 3, whether to also include:
+| Request | Flow |
+|---|---|
+| "save this session", "pin", "encrypt" | Steps 1 to 7, then 9 |
+| "save the handoff" | Steps 1 to 7, then 9, with no questions about what to include |
+| "share this session with …", "hand off this session to …", "save this session and share it with …" | Steps 1 to 7 with a share flag in step 5, then 9. If the ledger already has a save of this session and nothing has changed since (`git status --short` clean in the project, no work done in this conversation since that save), run step 1, then step 8 with that save instead |
+| "share my last session" | Step 1, then step 8 with the newest ledger entry whose `project` is the current project, skipping entries with `derivedFrom` (handoff-only copies made for an earlier share). No entry for this project: show the newest entries and ask which one |
 
-- artifacts: list the local files you will reference under `## Artifacts`, by path, so they can pick any to bundle;
-- the transcript: the full session, which needs the warning and a yes in step 3;
-- optionally, what the next agent should do. Their answer becomes the handoff's Goal and its first "Next" step.
+Then ask what you need, all in one message:
 
-Don't ask when the user asked for the handoff only ("save the handoff"), or already said what to include ("include the report", "include the transcript", "without the transcript"). When saving and sharing in one request, ask this together with the share question below, in one message.
+- **What to include** (saves only). Every save holds the handoff. Ask whether to also include:
+  - artifacts: list the local files you will reference under `## Artifacts`, by path, so the user can pick any to bundle;
+  - the transcript: the full session, which needs the warning and a yes in step 3.
+- **What the next agent should do** (saves only, optional). The answer becomes the first "Next" step under Open threads.
+- **What the share contains** (shares only): the handoff and artifacts only, or the transcript too. 🔴 CHECKPOINT — sharing the transcript needs its own yes, even when the user confirmed it for the save: the recipient can read all of it.
 
-Before any share, ask what it contains, unless the user already said: the handoff and artifacts only, or the transcript too. When saving and sharing in one request, ask before step 3. 🔴 CHECKPOINT — sharing the transcript needs its own confirmation, even when the user confirmed it for the save: the recipient can read all of it.
+Skip a question the user already answered ("include the report", "include the transcript", "without the transcript"). For "save the handoff", ask nothing.
 
-If the user wants the transcript in the save but not in the share, that takes two uploads: the save, then a handoff-only upload for the share (step 6). Say so and get a yes, or save without the transcript.
+If the user wants the transcript in the save but not in the share, that takes two uploads: the save, then a handoff-only copy for the share (step 8). Say so and get a yes, or save without the transcript.
 
-## 1. Check the CLI and credentials
-
-Run the version check:
+## 1. Check the CLI and the login
 
 ```bash
 command -v filecoin-pin || npm install -g filecoin-pin@latest   # needs Node 24+; always latest, so CLI improvements deploy
 filecoin-pin get --help | grep -q -- '--share' && echo sharing-ok
 ```
 
-No `sharing-ok`: follow "Install and version check" in `filecoin-pin-cli.md`. Then run the network check from the same file. If the user chose the owner wallet (`PRIVATE_KEY`), skip the credentials check: it only looks at the saved login. Otherwise run it, and log in with `encrypt` in `--scopes` if it fails (the login steps are under Credentials there).
+No `sharing-ok`: follow "Install and version check" in `filecoin-pin-cli.md`. Then run the network check from the same file.
+
+If the user chose the owner wallet (`PRIVATE_KEY`), skip the login check: it only looks at the saved login. Otherwise run it, and log in with `encrypt` in `--scopes` if it fails (Credentials in `filecoin-pin-cli.md`).
 
 ## 2. Write the handoff
 
 Write it in this turn from what you already know about the session. No extra model call.
 
-Your memory of the session can be out of date, especially after a compaction. Before writing, check what can have changed since you last looked, with one cheap command each:
+Your memory of the session can be out of date, especially after a compaction. Before writing, check what can have changed, with one cheap command each:
 
 - every PR or issue you will mention as open, pending or "will merge": `gh pr view <n> --json state` or `gh issue view <n> --json state`;
 - uncommitted work you will mention: `git status --short` in that repo.
 
-Write what the checks show. If you can't check something (no `gh`, no network), write "as of <date>, not rechecked" next to it.
+Write what the checks show. If you can't check something (no `gh`, no network, not a git repo), write "as of <date>, not rechecked" next to it.
+
+Make the save folder:
 
 ```bash
 dir="$(mktemp -d)/session-$(date -u +%Y%m%dT%H%M%SZ)" && mkdir -p "$dir" && echo "$dir"
@@ -49,7 +56,7 @@ date -u +%Y-%m-%dT%H:%M:%SZ   # createdAt
 
 Shell variables don't carry over between your commands. Wherever `$dir` appears below, write the path this printed, or set `dir=` again at the start of that command.
 
-Write `$dir/handoff.md` in exactly this shape, with your values, never the example's: `createdAt` is the date printed above, and `origin` takes the values from "Origin values" in `SKILL.md`; leave out a field you don't have.
+Write `$dir/handoff.md` in exactly this shape, with your values, never the example's. `createdAt` is the date printed above; `origin` takes the values from "Origin values" in `SKILL.md`, leaving out a field you don't have.
 
 ```markdown
 ---
@@ -66,11 +73,11 @@ origin: { tool: claude-code, toolVersion: 2.1.3 }
 
 ## Decisions
 
-- A choice that was made, and why. One bullet each. Status ("PR #12 was reviewed") is not a decision: put it under Open threads, or leave it out.
+- A choice that was made, and why. One bullet each.
 
 ## Constraints
 
-- Rules the next agent must follow: the user's requirements, limits, preferences and corrections. Not project decisions: those go under Decisions.
+- Rules the next agent must follow: the user's requirements, limits, preferences and corrections.
 
 ## Artifacts
 
@@ -81,35 +88,36 @@ origin: { tool: claude-code, toolVersion: 2.1.3 }
 
 ## Dead ends
 
-- What was tried and didn't work, with the exact error or reason, so the next agent doesn't repeat it. `None.` if nothing failed.
+- What was tried and didn't work, with the exact error or reason, so the next agent doesn't repeat it.
 
 ## Open threads
 
 - Next: the one concrete step to take first.
-- Then: other unfinished work and open questions, as of now. Only items that are still open; finished work goes under Decisions, or nowhere.
+- Then: other unfinished work and open questions, still open as of now.
 ```
 
-Context is at most three bullets, about 60 words: no history of what happened, no command output, and nothing that belongs under the other headings.
+Writing rules:
 
-Write `None.` under a heading that has nothing. Write a summary, not the transcript. Name files and links; don't paste their contents. Copy IDs, CIDs, commands and error messages exactly, never paraphrased: the next agent may need them verbatim.
+- Context is at most five bullets, about 100 words: no history, no command output, nothing that belongs under another heading.
+- Status ("PR #12 was reviewed") is not a decision: it goes under Open threads, or nowhere. Project decisions go under Decisions, not Constraints.
+- When the user said what the next agent should do, that is the "Next" step. Goal stays the overall outcome they want.
+- Write `None.` under a heading that has nothing.
+- Write a summary, not the transcript. Name files and links; don't paste their contents. Never write keys, tokens or `.env` values.
+- Copy IDs, CIDs, commands and error messages exactly, never paraphrased.
 
-Then reread it once: every open thread is still open, every state you mention matches the checks above, and each bullet sits under the right heading.
+Reread it once: every open thread is still open, every state you mention matches the checks above, and each bullet sits under the right heading.
 
-Show the handoff to the user and offer one round of edits before going on: it is what the next agent will act on. Apply what they change, then continue. This is a quick review, not a gate: no answer means go on.
+If the user stops the flow at any point from here on, delete the save folder with the cleanup in step 7 before ending the turn: it can already hold a transcript copy.
 
-If the user stops the flow at any point after this — no save, changed their mind — delete the folder with the guarded cleanup command in step 5 before ending the turn: it can already hold a transcript copy.
+## 3. Bundle artifacts and the transcript
 
-## 3. Bundle named artifacts and the transcript
-
-Only files the user named or picked are bundled with the handoff. Copy each one, with the source path quoted:
+**Artifacts.** Only files the user named or picked are bundled. Copy each one with the source path quoted, and list it under `## Artifacts` as `artifacts/<name>`:
 
 ```bash
 mkdir -p "$dir/artifacts" && cp '<named-file>' "$dir/artifacts/"
 ```
 
-A name that itself contains a quote can't be substituted safely into any quoting: ask the user to rename the file first.
-
-Never copy a `.env` file, a key file, or anything the user didn't name. List each bundled file under `## Artifacts` as `artifacts/<name>`.
+A name that itself contains a quote can't be quoted safely: ask the user to rename the file first. Never copy a `.env` file, a key file, or anything the user didn't name.
 
 **The transcript, only when the user asks for it.** Find the tool's transcript by the session id from "Origin values" in `SKILL.md`:
 
@@ -124,8 +132,6 @@ No single file found: ask the user for the path. Copy it into the folder, never 
 cp '<transcript-path>' "$dir/transcript.jsonl" && chmod 600 "$dir/transcript.jsonl" && du -h "$dir/transcript.jsonl"
 ```
 
-A size cap applies to every upload; the CLI reads it from the installed release, and a large transcript is the one thing likely to reach it. If `add` later refuses with a size error, quote it and save without the transcript.
-
 Never print or read the copy into the conversation. 🔴 CHECKPOINT — warn the user, and wait for an explicit yes:
 
 - the transcript holds everything you saw in this session: command output, file contents, pasted text. It can contain secrets and sensitive information that no scan reliably finds;
@@ -133,11 +139,11 @@ Never print or read the copy into the conversation. 🔴 CHECKPOINT — warn the
 - if it is shared, the recipient can read all of it, and a share can't be revoked. That includes any Share link and Access key made earlier in this session: if the scan in step 4 finds `fak1_` values in the transcript, the recipient could open those earlier shares too;
 - they should run their own redaction on the copy at `$dir/transcript.jsonl` (give the path) before saying yes.
 
-No yes: delete the copy (`rm -f "$dir/transcript.jsonl"`) and save without it. On yes, list it under `## Artifacts`.
+No yes: delete the copy (`rm -f "$dir/transcript.jsonl"`) and save without it. On yes, list it under `## Artifacts`. Every upload has a size cap: if `add` later refuses with a size error, quote it and save without the transcript.
 
-## 4. Check before saving
+## 4. Check and review
 
-Format check. All seven lines must print, each starting `ok`; the missing one names the failure:
+**Format check.** All seven lines must print, each starting `ok`; a missing one names the failure:
 
 ```bash
 f="$dir/handoff.md"
@@ -145,9 +151,13 @@ head -1 "$f" | grep -qx -- '---' && grep -qx 'version: 1' "$f" && grep -qE '^cre
 for h in 'Context' 'Decisions' 'Constraints' 'Artifacts' 'Dead ends' 'Open threads'; do grep -qx "## $h" "$f" && echo "ok $h"; done
 ```
 
-Fewer than seven lines: fix `handoff.md` and run the check again (`ok frontmatter` checks the frontmatter in order: opening `---`, `version`, `createdAt`, `origin`). The file must use LF line endings and no byte-order mark; a CRLF file fails every line.
+Fewer than seven lines: fix `handoff.md` and run it again. `ok frontmatter` checks, in order, the opening `---`, `version`, `createdAt` and `origin`. The file must use LF line endings and no byte-order mark: a CRLF file fails every line.
 
-Secret scan. It is a backstop, not a guarantee: a clean scan doesn't make a file safe to share, it only catches known shapes. It prints the number of matches and the file name, never the matching text, and streams line by line, so a large transcript doesn't exhaust memory. It scans regular files only; anything else (a symlink, a pipe) prints `UNREADABLE`. CIDs are never flagged. A transaction hash has the same shape as a private key (64 hex characters), so it is skipped only where the text marks it as one — a `/tx/` link, or a label such as `tx`, `transaction`, or one ending in `hash` or `root` (`blockHash`, `stateRoot`) — and the value carries its `0x` prefix. A bare 64-character hex value is still flagged. Access keys and Grants count only with a real key after the prefix, so placeholders like `fak1_…` in this skill's own text don't. Assignments whose variable name contains `KEY`, `SECRET`, `TOKEN` or `PASSWORD` (`API_KEY=`, `MY_TOKEN=`, …) with a value of six or more characters are flagged anywhere in a line, also inside JSON lines of a transcript.
+**Secret scan.** A backstop, not a guarantee: it only catches known shapes. It prints the number of matches per file, never the matching text.
+
+- CIDs are never flagged. A 64-character hex value is flagged unless the text marks it as a transaction hash: a `/tx/` link, or a label such as `tx`, `transaction`, or one ending in `hash` or `root`, with the `0x` prefix.
+- `fak1_` and `fgr1_` count only with a real key after the prefix, so this skill's own placeholders don't.
+- `…KEY=`, `…SECRET=`, `…TOKEN=` and `…PASSWORD=` assignments with a real value are flagged anywhere in a line, also inside a transcript's JSON lines.
 
 ```bash
 node -e '
@@ -168,24 +178,30 @@ const files = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e
 })()' "$dir"
 ```
 
-- A match in `handoff.md`: find the line you wrote and remove the secret, or mark a transaction hash as one (label plus `0x`). Run the scan again.
+- A match in `handoff.md`: find the line you wrote and remove the secret, or mark a transaction hash as one (a label plus `0x`). Run the scan again.
 - 🔴 CHECKPOINT — a match in a bundled file: stop. Tell the user which file matched and ask whether to drop it.
-- Matches in `transcript.jsonl`: tell the user how many, and ask whether to redact it themselves, drop it, or keep it. They decide; don't open the file to look.
-- `UNREADABLE`: the file couldn't be scanned. Treat it as unscanned, not as clean — say so, and let the user decide whether it ships.
+- Matches in `transcript.jsonl`: tell the user how many, and ask whether to redact it themselves, drop it, or keep it. Don't open the file to look.
+- `UNREADABLE`: the file couldn't be scanned. Treat it as unscanned, not clean: say so, and let the user decide whether it ships.
 
-## 5. Save
+**Review.** Show the user the handoff as it will be uploaded, with the bundled files, the transcript line and what the scan found, and offer one round of edits: it is what the next agent will act on. If their goal relies on something the checks in step 2 showed is out of date (a PR they want merged is already merged), say so. If they change the handoff, run the format check and the scan again. This is a quick review, not a gate: no answer means go on.
+
+## 5. Upload
 
 ```bash
 filecoin-pin add "$dir" --encrypt --egress-provider none --no-update-check
 ```
 
-To share in the same run, add `--get-share-link-restricted`: one command, and no second read of the header from the provider. With the owner wallet, run it with `--dry-run` first and show the user the cost. 🔴 CHECKPOINT — run the real upload only after they say yes.
+- To share in the same run, add `--get-share-link-restricted`, or `--get-share-link` for an open link the user asked for and confirmed ("Open links" in `filecoin-pin-cli.md`): one command, and no second read of the header from the provider.
+- With the owner wallet, run it with `--dry-run` first and show the user the cost. 🔴 CHECKPOINT — run the real upload only after they say yes.
+- It takes one to a few minutes. Let it finish: a slow upload is not a failed one, and you never stop it to start again. With a share flag, run it in the foreground with a 10-minute timeout: its output holds the Access key, and a background run saves the whole output to a file. Without one, you can run it in the background and poll.
 
-It takes one to a few minutes. Let it finish: a slow upload is not a failed one. Never stop it to start again. With the share flag, run it in the foreground with a long timeout (10 minutes): its output holds the Access key, and a background run saves the whole output to a file. Without it, you can run it in the background and poll. The root CID in the summary is the Encrypted root CID. Funding errors: see `filecoin-pin-cli.md`.
+Read the result with "Reading the `add` result" in `filecoin-pin-cli.md`. Never run `add` again to recover from a failure: a second run makes a new CID and pays for a second upload. The table there says what to do instead, including the funding stop, the one case where you run it again yourself.
 
-If `add` fails or exits `2`, never run it again to recover: follow Troubleshooting in `filecoin-pin-cli.md`. A second run makes a new CID and pays for a second upload. Record the ledger entry once the upload is stored, also when the commit is not confirmed yet: the CID stays the same. Tell the user if it is not confirmed.
+The Encrypted root CID is the root CID in the output. Once the upload is stored, even when it isn't confirmed yet, go on to step 6: the CID stays the same.
 
-Then add one entry to the ledger at `~/.filecoin-share/sessions.json`. The entry holds only these fields, plus `"transcript": true` only when the upload includes the transcript. Never a summary, a title or a key:
+## 6. Record it in the ledger
+
+Add one entry to `~/.filecoin-share/sessions.json`. It holds only these fields, never a summary, a title or a key:
 
 ```json
 {
@@ -198,9 +214,11 @@ Then add one entry to the ledger at `~/.filecoin-share/sessions.json`. The entry
 }
 ```
 
-`origin` follows "Origin values" in `SKILL.md`: `tool` always, other fields only when the tool exposes them. `transcriptPath` is a local path back to the session, filled only when the tool gives it to you. The transcript itself is uploaded only when the user confirmed it in step 3.
+- Add `"transcript": true` only when the upload includes the transcript.
+- `origin` follows "Origin values" in `SKILL.md`: `tool` always, other fields only when the tool exposes them.
+- `transcriptPath` is the local path of the original transcript, filled only when step 3 found it, through the lookup or the path the user gave. The transcript itself is uploaded only when the user confirmed it.
 
-Append the entry and keep the file mode `0600`:
+Append it, keeping the file mode `0600`:
 
 ```bash
 mkdir -p ~/.filecoin-share && ENTRY='<the entry as one line of JSON>' node -e '
@@ -212,16 +230,17 @@ fs.writeFileSync(f, JSON.stringify(list, null, 2) + "\n", { mode: 0o600 })
 fs.chmodSync(f, 0o600)'
 ```
 
-A field value containing a single quote (an apostrophe in a project path) breaks the `ENTRY='…'` quoting: the command fails loudly with the ledger untouched. Pass the entry another way then, for example `ENTRY="$(cat entry.json)"` from a temp file you delete after.
+- A value with a single quote (an apostrophe in a project path) breaks the `ENTRY='…'` quoting, and the command fails with the ledger untouched. Pass the entry another way then, for example `ENTRY="$(cat entry.json)"` from a temp file you delete after.
+- The ledger isn't valid JSON or isn't an array (a crash or a hand edit): don't lose the entry. Move the broken file aside (`mv ~/.filecoin-share/sessions.json ~/.filecoin-share/sessions.json.corrupt`), tell the user its contents can be recovered by hand, and run the append again.
 
-If the append fails because the ledger isn't valid JSON or isn't an array (a crash or a hand edit), don't lose the entry: move the broken file aside (`mv ~/.filecoin-share/sessions.json ~/.filecoin-share/sessions.json.corrupt`), tell the user it was set aside with its contents recoverable by hand, and run the append again.
+If this request also needs a handoff-only copy for the share (the two-uploads case in step 0), make it now from the save folder, before cleaning up: step 8.
 
-If this request also needs a handoff-only upload for the share (the two-uploads case above), make it now from the save folder, before cleaning up: follow step 6's handoff-only procedure.
+## 7. Clean up
 
-Then delete the save folder: it holds the transcript in plain text when one was included. Set `d` to the `mktemp -d` parent of the path printed in step 2 — its `dirname`, never the system temp root itself — and run this guard (also the command for any other `mktemp -d` folder, passed as is, and whenever the user abandons the flow early). It deletes only a folder `mktemp -d` made, named `tmp.*` directly in the temp root, and refuses anything else, including the temp root and its parents:
+Delete the save folder: it holds the transcript in plain text when one was included. Use this guard for every folder this skill makes with `mktemp -d`, including when the user stops the flow early and in `receive.md`. Pass the `mktemp -d` folder itself: for the save folder, that is the parent (`dirname`) of the path printed in step 2.
 
 ```bash
-d='<the temp folder to delete>'
+d='<the mktemp -d folder>'
 case "$d" in
   *..*|*/tmp.*/*) echo "refusing to delete $d — not a mktemp -d folder itself" ;;
   /tmp/tmp.?*|/var/folders/*/*/T/tmp.?*|/private/var/folders/*/*/T/tmp.?*|"${TMPDIR%/}"/tmp.?*) rm -rf "$d" && echo cleaned ;;
@@ -229,45 +248,43 @@ case "$d" in
 esac
 ```
 
-Reply as in step 7. Then ask once: "Do you want a Share link for this session now? It makes a link and a separate Access key, and uploads nothing." On yes, run step 6. Don't ask when the user already asked to share.
+It deletes only a folder named `tmp.*` directly in the temp root, and refuses anything else, including the temp root and its parents.
 
-## 6. Share
+## 8. Share
 
-The ledger is `~/.filecoin-share/sessions.json`. A link opens the whole upload, so check what the saved upload holds against what the user wants to share:
+A link opens the whole upload, so compare what the saved upload holds with what the user wants to share. For an entry whose `network` is `calibration`, add `--network calibration` to every command here.
 
-- They match (no transcript in the save, or the user confirmed sharing it): share the saved upload.
+| Case | Do |
+|---|---|
+| They match: no transcript in the save, or the user confirmed sharing it | `filecoin-pin get-share-link <cid> --restricted --no-update-check` (no `--restricted` for an open link the user asked for) |
+| The save has the transcript, the user wants the handoff only, and the ledger has an entry whose `derivedFrom` is this save's CID | That entry is the handoff-only copy: `get-share-link` on its CID, as above. Nothing is uploaded |
+| The same, but there is no such entry | Make a handoff-only copy, below |
+| The user wants the transcript, but the save doesn't have it | Save again including the transcript (steps 2 to 7), and share that save |
 
-  ```bash
-  filecoin-pin get-share-link <encrypted-root-cid> --restricted --no-update-check
-  ```
+**Handoff-only copy.** 🔴 CHECKPOINT — it is one more paid upload: say so, and wait for a yes. Then:
 
-  For an entry whose `network` is `calibration`, add `--network calibration` to every command in this step.
+1. Restore the save and copy its folder, keeping its `session-…` name, into a second temp folder without the transcript. `get` prints the saved path:
 
-- The save includes the transcript (`"transcript": true` in the ledger) and the user wants the handoff and artifacts only: a share can't hold part of an upload, so it needs a handoff-only upload. 🔴 CHECKPOINT — it is one more paid upload: say so, and wait for a yes. Then:
-  1. Restore the save into a captured temp folder, and copy it without the transcript into a second one. `get` prints the saved path inside `$o`:
+   ```bash
+   o="$(mktemp -d)" && echo "$o" && filecoin-pin get <cid> "$o" --no-update-check
+   t="$(mktemp -d)" && cp -R '<saved-path>' "$t/" && rm -f "$t/<session folder>/transcript.jsonl" && echo "$t/<session folder>"
+   ```
 
-     ```bash
-     o="$(mktemp -d)" && echo "$o" && filecoin-pin get <encrypted-root-cid> "$o" --no-update-check
-     t="$(mktemp -d)" && cp -R '<saved-path>/.' "$t/" && rm -f "$t/transcript.jsonl" && echo "$t"
-     ```
+2. Edit `$t/<session folder>/handoff.md` in place: remove the `transcript.jsonl` line from `## Artifacts`, writing `None.` if it was the only one.
+3. Run the format check and the secret scan (step 4) on it, with `dir='<the $t/<session folder> path>'` at the start of each command.
+4. Upload it with the share flag, as in step 5 (with the owner wallet: dry run, cost, yes):
 
-  2. Remove the `transcript.jsonl` line from `## Artifacts` in `$t/handoff.md`. If it was the only line there, write `None.` under the heading.
-  3. Run the format check and the secret scan (step 4) on it, with `dir=<the $t path>` set at the start of each command.
-  4. Upload it with the share flag, as in step 5 (with the owner wallet: dry run, cost, yes), then:
+   ```bash
+   filecoin-pin add '<the $t/<session folder> path>' --encrypt --get-share-link-restricted --egress-provider none --no-update-check
+   ```
 
-     ```bash
-     filecoin-pin add "<the $t path>" --encrypt --get-share-link-restricted --egress-provider none --no-update-check
-     ```
+   If this upload fails before anything is stored, the save and its ledger entry still stand: the session is saved, just not shared. Nothing was uploaded, so running it again when the user asks is not the forbidden re-run.
+5. Record it in the ledger (step 6) with the save's `origin`, `network` and `project`, no `"transcript"`, and `"derivedFrom": "<the save's CID>"`.
+6. Clean up `$o` and `$t`, each passed to the guard in step 7 as is.
 
-     If this upload fails before it is stored, the save and its ledger entry still stand: the session is saved, just not shared. Nothing was uploaded, so running it again when the user asks is not the forbidden re-run — but it is still a new attempt the user pays for only once it succeeds.
-  5. Record it in the ledger with the save's `origin` and `network`, no `"transcript"`, and `"derivedFrom": "<the save's CID>"`. Then delete both temp folders — the `$o` restore folder and the `$t` copy, each itself a `mktemp -d` path, passed to the guard as is, never their `dirname` — with step 5's guarded cleanup.
-- The user wants the transcript, but the save doesn't have it: save again including the transcript (steps 2 to 5), and share that save.
+## 9. Reply
 
-Then reply as in step 7.
-
-## 7. Reply
-
-Start the reply with this block, in this order. Leave out the link and the key when nothing was shared. For an open link (only when the user asked for one, as in "Open links" in `filecoin-pin-cli.md`), leave out the Access key block, label the link "Share link (opens on its own: anyone who has it can read the content)", and repeat that section's warning. Use "Session shared" when this run only shared an earlier save.
+Start the reply with this block:
 
 ```
 <Session saved | Session shared> · <confirmed on chain | stored, not yet confirmed on chain> · <mainnet | calibration>
@@ -282,15 +299,20 @@ Access key (send by a different channel, e.g. a chat message):
 fak1_…
 ```
 
+- **Confirmed or not:** as "Reading the `add` result" in `filecoin-pin-cli.md` says.
+- **Nothing shared:** leave out the link and the key.
+- **Shared an earlier save, no upload in this run:** "Session shared", with no confirmation part: it was reported when that save was made.
+- **Open link:** leave out the Access key block, label the link "Share link (opens on its own: anyone who has it can read the content)", and repeat the warning from "Open links".
+
 Then, in short bullets:
 
-- what the upload holds: the handoff (a summary of context, decisions, constraints, artifacts and open threads; no keys), the bundled artifacts, and whether it includes the transcript;
-- who can read it: only the user (the owner wallet, or a session key with their Grant), plus, when shared, whoever holds both the link and the Access key. A share can't be revoked, and this conversation's history now holds the Access key: anyone who can read this chat or its transcript can open the share;
-- when shared: the receiving agent restores it with this skill (`filecoin-pin get --share`). A fresh upload is usually retrievable within minutes — "not found yet" on the recipient's side means indexing is still catching up; wait and retry. The Access key isn't saved anywhere, so send it now; another `get-share-link` makes a new link and key;
-- not yet confirmed: the warning and the `piece-status` command from "Upload stored but not confirmed" in `filecoin-pin-cli.md`;
-- fewer copies than requested: which providers hold it, as in "Only the second copy failed" in `filecoin-pin-cli.md`;
+- what the upload holds: the handoff (a summary of context, decisions, constraints, artifacts, dead ends and open threads; no keys), the bundled artifacts, and whether it includes the transcript;
+- who can read it: only the user (the owner wallet, or a session key with their Grant), plus, when shared, whoever holds the link and the Access key. A share can't be revoked, and this conversation's history now holds the Access key: anyone who can read this chat or its transcript can open the share;
+- when shared: the receiving agent restores it with this skill (`filecoin-pin get --share`). A fresh upload is usually retrievable within minutes; "not found yet" means indexing is still catching up, so wait and retry. The Access key isn't saved anywhere, so send it now; another `get-share-link` makes a new link and key;
+- not yet confirmed: the warning and the `piece-status` command from "Reading the `add` result";
+- fewer copies than requested: which providers hold it;
 - calibration: the recipient passes `--network calibration` too.
 
-**Sharing right after a save in this conversation** (the user said yes to the question in step 5): the save reply already gave the status, the CID and the bullets. Reply with only the Share link and the Access key block, then only the bullets that are new: who can read it now (whoever holds both; a share can't be revoked; this chat's history now holds the key), how the recipient opens it (this skill, `filecoin-pin get --share`), and that the key isn't saved anywhere, so send it now. Don't repeat the status line, the CID, what the upload holds, the redundancy or the network note. Say only whether the share includes the transcript.
+After a plain save, ask once: "Do you want a Share link for this session now? It makes a link and a separate Access key, and uploads nothing." On yes, run step 8, then reply with only the link and key block and the bullets that are new: who can read it now, how the recipient opens it, that the key isn't saved anywhere, and whether the share includes the transcript. Don't repeat the status line, the CID, what the upload holds, the redundancy or the network note.
 
-After this reply, never repeat the Access key, and never write it to the ledger, a file or a log.
+After the reply, never repeat the Access key, and never write it to the ledger, a file or a log.
