@@ -12,7 +12,7 @@ Say "publish this", "share this file", or "pin this" and the agent hands back a 
 
 **Don't use it for** — private or client-gated content (everything published is public), full apps with a backend, or anything that needs to stay at the *same* URL as it changes. CIDs are immutable: new bytes mean a new link.
 
-> **Private content is coming.** A version of these skills for private, encrypted publishing is in the works. Until then, treat everything published here as public.
+> **Need it private?** [`private-share`](../private-share/) encrypts a file or folder for one recipient, and [`session-share`](../session-share/) does the same for an agent session. Everything published with this skill is public.
 
 ## Install
 
